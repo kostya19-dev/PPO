@@ -1,0 +1,67 @@
+<mxfile host="app.diagrams.net" version="29.6.1">
+  <diagram id="L4-service-lab6" name="L4 Service Lab6">
+    <mxGraphModel dx="1800" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2200" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="&lt;b&gt;L4 — Компонент бизнес-логики и сервисный слой (Lab 6)&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=18;fontColor=#0b5394;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="980" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="CLI работает напрямую с сервисами. API-компонент пока реализует health/info и подготовлен как backend для будущего GUI. AppointmentService параметризуется business-настройкой из config." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="40" y="52" width="1550" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="cli" value="CommandApp&#xa;delivery/cli/command.go&#xa;patient / schedule / appointment / visit&#xa;Команды и флаги" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#23A2D9;strokeColor=#0E7DAD;fontColor=#ffffff;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="60" y="140" width="240" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="api" value="HTTP Server&#xa;delivery/http/server.go&#xa;/health, /info&#xa;future backend for GUI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#23A2D9;strokeColor=#0E7DAD;fontColor=#ffffff;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="360" y="140" width="240" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="gui" value="Web GUI (future)&#xa;React / TypeScript" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d9ead3;strokeColor=#82b366;fontColor=#274e13;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="660" y="140" width="220" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="config" value="business.appointment_min_lead_time_minutes&#xa;Источник: config/app.json / env override" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#7f6000;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1270" y="140" width="310" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="patient_service" value="PatientService&#xa;Register(CreatePatientDTO) : PatientResponseDTO&#xa;GetByID(uuid.UUID) : PatientResponseDTO&#xa;GetAll() : []PatientResponseDTO&#xa;FindByEmail(string) : PatientResponseDTO&#xa;Delete(uuid.UUID) : error" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#274e13;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="380" width="280" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="appointment_service" value="AppointmentService&#xa;Create(CreateAppointmentDTO) : AppointmentResponseDTO&#xa;Cancel(uuid.UUID) : error&#xa;GetByID(uuid.UUID) : AppointmentResponseDTO&#xa;GetAll() : []AppointmentResponseDTO&#xa;GetByPatient(uuid.UUID) : []AppointmentResponseDTO&#xa;+ minLeadTime time.Duration" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#274e13;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="390" y="380" width="300" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="schedule_service" value="ScheduleService&#xa;CreateSlot(CreateScheduleSlotDTO) : ScheduleSlotResponseDTO&#xa;GetByDoctor(uuid.UUID) : []ScheduleSlotResponseDTO&#xa;GetFreeSlots(uuid.UUID,time.Time) : []ScheduleSlotResponseDTO&#xa;DeleteSlot(uuid.UUID) : error" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#274e13;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="740" y="380" width="300" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="visit_service" value="VisitService&#xa;Create(CreateVisitDTO) : VisitResponseDTO&#xa;Complete(uuid.UUID,UpdateVisitDTO) : VisitResponseDTO&#xa;GetByAppointment(uuid.UUID) : VisitResponseDTO&#xa;GetByPatient(uuid.UUID) : []VisitResponseDTO&#xa;Использует appointments для поиска визитов пациента" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#274e13;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1090" y="380" width="320" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="patient_repo" value="PatientRepository&#xa;Save / FindByID / FindAll / FindByEmail / Update / Delete" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f3f3;strokeColor=#999999;fontColor=#333333;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="720" width="280" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="appointment_repo" value="AppointmentRepository&#xa;Save / FindByID / FindAll / FindByPatient / CheckSlotBusy / Update / Delete" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f3f3;strokeColor=#999999;fontColor=#333333;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="390" y="720" width="300" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="schedule_repo" value="ScheduleRepository&#xa;Save / FindByDoctorID / FindFreeSlots / Update / Delete" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f3f3;strokeColor=#999999;fontColor=#333333;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="740" y="720" width="300" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="visit_repo" value="VisitRepository&#xa;Save / FindByID / FindByAppointment / Update / Delete" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f3f3;strokeColor=#999999;fontColor=#333333;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1090" y="720" width="320" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="note" value="Все DTO и проверки находятся в usecase/domain. Сервисный слой зависит от интерфейсов репозиториев, а конкретную PostgreSQL-реализацию подставляет bootstrap." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#7f6000;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1460" y="420" width="320" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" value="вызывает" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="cli" target="patient_service"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2" value="вызывает" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="cli" target="appointment_service"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3" value="вызывает" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="cli" target="schedule_service"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e4" value="вызывает" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="cli" target="visit_service"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e5" value="future HTTP handlers" style="dashed=1;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=0;" edge="1" parent="1" source="api" target="appointment_service"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e6" value="future client" style="dashed=1;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=0;" edge="1" parent="1" source="gui" target="api"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e7" value="параметризует" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="config" target="appointment_service"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e8" value="depends on" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="patient_service" target="patient_repo"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e9" value="depends on" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="appointment_service" target="appointment_repo"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e10" value="depends on" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="schedule_service" target="schedule_repo"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e11" value="depends on" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="visit_service" target="visit_repo"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e12" value="uses for GetByPatient / Create" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="visit_service" target="appointment_repo"><mxGeometry relative="1" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

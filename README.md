@@ -360,3 +360,84 @@ go run ./cmd/clinic
 - начало, завершение и просмотр приема.
 
 Системный тест запускает технический UI со scripted input и проверяет прохождение основных бизнес-сценариев через консольное меню.
+
+## 18. Предварительная сборка, конфигурация и логирование
+
+В рамках лабораторной работы №6 приложение собрано как готовый исполняемый компонент, который запускается без IDE.
+
+Код и файлы:
+
+- `VitaLineClinic/cmd/clinic/main.go` — единая точка входа приложения;
+- `VitaLineClinic/internal/bootstrap` — сборка зависимостей приложения;
+- `VitaLineClinic/internal/appconfig` — чтение JSON-конфига и env-переопределений;
+- `VitaLineClinic/internal/logging` — настройка логирования;
+- `VitaLineClinic/internal/delivery/cli/command.go` — технический UI через команды и флаги;
+- `VitaLineClinic/internal/delivery/http` — HTTP-компонент для проверки собранного backend;
+- `VitaLineClinic/config/app.json` — внешний конфиг;
+- `VitaLineClinic/scripts/build_components.sh` — сборка бинарного артефакта;
+- `VitaLineClinic/Dockerfile` и `docker-compose.yml` — контейнерная сборка и запуск PostgreSQL/API.
+
+Обновленные C4-диаграммы для этапа сборки:
+
+- `docs/diagrams/L2_lab6.drawio` — контейнеры приложения после добавления конфигурации, логирования и БД;
+- `docs/diagrams/L3_lab6.drawio` — компоненты backend после сборки;
+- `docs/diagrams/L4_service_layer_lab6.drawio` — L4 бизнес-логики в собранном приложении;
+- `docs/diagrams/L4_repository_pattern_lab6.drawio` — L4 компонента доступа к данным.
+
+Основные параметры вынесены из кода в конфигурацию:
+
+- строка подключения к БД: `database.url` или `DATABASE_URL`;
+- путь к лог-файлу: `logging.file` или `VITALINE_LOG_FILE`;
+- уровень логирования: `logging.level` или `VITALINE_LOG_LEVEL`;
+- адрес HTTP-компонента: `api.address` или `VITALINE_HTTP_ADDRESS`;
+- бизнес-параметр минимального времени до записи: `business.appointment_min_lead_time_minutes` или `VITALINE_APPOINTMENT_MIN_LEAD_TIME_MINUTES`.
+
+Порядок применения настроек:
+
+1. Загружается `config/app.json`.
+2. Применяются значения по умолчанию.
+3. Значения перекрываются переменными окружения.
+4. Конфиг валидируется.
+5. В `bootstrap` создаются логер, подключение к БД, репозитории и usecase-сервисы.
+
+Логирование пишет одновременно в stdout и во внешний файл. В Docker лог-файл вынесен через volume:
+
+```yaml
+volumes:
+  - ./VitaLineClinic/logs:/app/logs
+```
+
+Это нужно, чтобы после остановки контейнера логи оставались на хосте.
+
+Сборка:
+
+```bash
+cd VitaLineClinic
+make build
+```
+
+После сборки появляется папка `dist`:
+
+```text
+dist/
+  clinic
+  config/app.json
+  logs/clinic.log
+  README-demo.txt
+```
+
+Примеры запуска:
+
+```bash
+./dist/clinic --config ./dist/config/app.json patient list
+./dist/clinic --config ./dist/config/app.json patient register --full-name "Иван Иванов" --phone "+79001234567" --email "ivanov@example.com" --birth-date "2000-05-10"
+./dist/clinic api --config ./dist/config/app.json --debug
+```
+
+Запуск через Docker Compose:
+
+```bash
+docker compose up -d --build
+docker compose ps
+docker compose logs -f api
+```

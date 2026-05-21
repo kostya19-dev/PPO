@@ -1,0 +1,64 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: vitaline_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: vitaline_app
+      POSTGRES_PASSWORD: vitaline_app
+      POSTGRES_DB: vitaline_clinic
+    ports:
+      - "5432:5432"
+    volumes:
+      - vitaline_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vitaline_app -d vitaline_clinic"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  migrations:
+    image: postgres:16-alpine
+    container_name: vitaline_migrations
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: vitaline_app
+    volumes:
+      - ./VitaLineClinic/migrations/schema.sql:/migrations/01-schema.sql:ro
+      - ./VitaLineClinic/migrations/seed.sql:/migrations/02-seed.sql:ro
+    command:
+      - sh
+      - -c
+      - |
+        psql -h postgres -U vitaline_app -d vitaline_clinic -v ON_ERROR_STOP=1 -f /migrations/01-schema.sql
+        psql -h postgres -U vitaline_app -d vitaline_clinic -v ON_ERROR_STOP=1 -f /migrations/02-seed.sql
+
+  api:
+    image: vitaline-backend:local
+    build:
+      context: ./VitaLineClinic
+      dockerfile: Dockerfile
+    container_name: vitaline_api
+    command: ["api"]
+    restart: unless-stopped
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+    environment:
+      VITALINE_APP_NAME: VitaLine Clinic
+      VITALINE_ENV: docker
+      DATABASE_URL: postgres://vitaline_app:vitaline_app@postgres:5432/vitaline_clinic?sslmode=disable
+      VITALINE_HTTP_ADDRESS: :8080
+      VITALINE_LOG_LEVEL: ${VITALINE_LOG_LEVEL:-info}
+      VITALINE_LOG_FILE: /app/logs/backend.log
+      VITALINE_APPOINTMENT_MIN_LEAD_TIME_MINUTES: ${VITALINE_APPOINTMENT_MIN_LEAD_TIME_MINUTES:-30}
+    volumes:
+      - ./VitaLineClinic/logs:/app/logs
+    ports:
+      - "${VITALINE_API_PORT:-8080}:8080"
+
+volumes:
+  vitaline_pgdata:
