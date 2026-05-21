@@ -1,0 +1,27 @@
+@startuml
+title Проведение приема
+
+actor "Врач" as Doctor
+boundary "UI" as UI
+control "VisitUseCase" as UseCase
+entity "AppointmentRepository" as Appointments
+entity "VisitRepository" as Visits
+database "PostgreSQL" as DB
+
+Doctor -> UI: заполняет жалобы, диагноз и рекомендации
+UI -> UseCase: CompleteVisit(appointmentId, data)
+UseCase -> Appointments: GetByID(appointmentId)
+Appointments -> DB: SELECT appointment
+DB --> Appointments: appointment
+Appointments --> UseCase: appointment
+UseCase -> Visits: Save(visit)
+Visits -> DB: INSERT visit
+DB --> Visits: saved visit
+Visits --> UseCase: visit
+UseCase -> Appointments: MarkCompleted(appointmentId)
+Appointments -> DB: UPDATE appointment status
+DB --> Appointments: ok
+UseCase --> UI: visit DTO
+UI --> Doctor: прием сохранен
+
+@enduml
