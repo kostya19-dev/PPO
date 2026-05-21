@@ -135,3 +135,108 @@ ER-диаграмма отражает основные сущности пре�
 ![BPMN Appointment](docs/diagrams/BPMNAPT.svg)
 
 ![BPMN Visit](docs/diagrams/BPMNVIS.svg)
+
+## 11. Тип приложения и технологический стек
+
+Проект развивается как небольшое веб-приложение для медицинской клиники.
+
+На текущем этапе система проектируется с учетом трех пользовательских входов:
+
+- **технический UI** — консольная утилита для администратора и проверки бизнес-сценариев;
+- **будущий GUI** — графический интерфейс для работы с пациентами, расписанием и приемами;
+- **HTTP API** — слой связи между пользовательским интерфейсом и бизнес-логикой.
+
+Основной сценарий взаимодействия пользователя с приложением:
+
+1. Администратор открывает интерфейс клиники.
+2. Система получает данные через HTTP API.
+3. API передает запрос в бизнес-логику.
+4. Бизнес-логика проверяет правила предметной области.
+5. Компонент доступа к данным читает или сохраняет информацию в БД.
+6. Результат возвращается пользователю в интерфейс.
+
+Такой стек выбран, потому что он позволяет независимо развивать UI, бизнес-логику и компонент доступа к данным.
+
+## 12. Диаграммы C4
+
+### L1. System Context
+
+Диаграмма показывает систему VitaLine Clinic и внешних пользователей: администратора, врача и пациента.
+
+Файлы:
+
+- `docs/diagrams/L1.png`
+- `docs/diagrams/L1.drawio`
+
+![C4 L1](docs/diagrams/L1.png)
+
+### L2. Container
+
+На уровне контейнеров система разделена на пользовательский интерфейс, backend/API и базу данных.
+
+Файлы:
+
+- `docs/diagrams/L2.png`
+- `docs/diagrams/L2.drawio`
+
+![C4 L2](docs/diagrams/L2.png)
+
+### L3. Component
+
+На уровне компонентов backend разделен на delivery-слой, use-case слой, доменную модель и репозитории.
+
+Файлы:
+
+- `docs/diagrams/L3.drawio.png`
+- `docs/diagrams/L3.drawio`
+
+![C4 L3](docs/diagrams/L3.drawio.png)
+
+### L4. Code
+
+Для уровня L4 подготовлены две диаграммы: компонент бизнес-логики и компонент доступа к данным.
+
+Файлы:
+
+- `docs/diagrams/L4_service layer.drawio.png`
+- `docs/diagrams/L4_service layer.drawio`
+- `docs/diagrams/L4_repository_pattern.drawio.png`
+- `docs/diagrams/L4_repository_pattern.drawio`
+
+![C4 L4 Service Layer](docs/diagrams/L4_service%20layer.drawio.png)
+
+![C4 L4 Repository](docs/diagrams/L4_repository_pattern.drawio.png)
+
+## 13. UML-диаграммы последовательности
+
+Для основных процессов подготовлены UML sequence-диаграммы. Они уточняют шаги, которые ранее были описаны BPMN-диаграммами.
+
+Файлы:
+
+- `docs/diagrams/BPMNAPT_UML.drawio.png`
+- `docs/diagrams/BPMNAPT_UML.drawio`
+- `docs/diagrams/BPMNVIS_UML.drawio.png`
+- `docs/diagrams/BPMNVIS_UML.drawio`
+- `docs/diagrams/BPMNVI_UML.drawio.png`
+- `docs/diagrams/BPMNVI_UML.drawio`
+- `docs/diagrams/sequence_appointment.puml`
+- `docs/diagrams/sequence_visit.puml`
+- `docs/diagrams/sequence_cancel_appointment.puml`
+
+![Sequence Appointment](docs/diagrams/BPMNAPT_UML.drawio.png)
+
+![Sequence Visit](docs/diagrams/BPMNVIS_UML.drawio.png)
+
+![Sequence Cancel Appointment](docs/diagrams/BPMNVI_UML.drawio.png)
+
+## 14. Диаграмма базы данных
+
+Схема базы данных подготовлена в DBML. Она описывает таблицы пациентов, врачей, расписания, записей, приемов, медицинских карт, услуг и платежей.
+
+Файлы:
+
+- `docs/dbml/vitaline_clinic.dbml`
+- `docs/diagrams/DB.drawio`
+- `docs/diagrams/ER.svg`
+
+DBML выбран как текстовый формат, потому что его удобно хранить в Git и отслеживать изменения в модели данных.

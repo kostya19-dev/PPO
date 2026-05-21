@@ -1,0 +1,73 @@
+Project vitaline_clinic {
+  database_type: "PostgreSQL"
+  Note: "Logical database model for VitaLine Clinic"
+}
+
+Table patients {
+  id uuid [pk]
+  full_name varchar [not null]
+  phone varchar [not null]
+  email varchar [unique]
+  birth_date date
+  created_at timestamp [not null]
+}
+
+Table doctors {
+  id uuid [pk]
+  full_name varchar [not null]
+  specialization varchar [not null]
+  room varchar
+  created_at timestamp [not null]
+}
+
+Table schedule_slots {
+  id uuid [pk]
+  doctor_id uuid [not null, ref: > doctors.id]
+  starts_at timestamp [not null]
+  ends_at timestamp [not null]
+  status varchar [not null]
+}
+
+Table appointments {
+  id uuid [pk]
+  patient_id uuid [not null, ref: > patients.id]
+  doctor_id uuid [not null, ref: > doctors.id]
+  slot_id uuid [not null, ref: > schedule_slots.id]
+  status varchar [not null]
+  reason text
+  created_at timestamp [not null]
+}
+
+Table visits {
+  id uuid [pk]
+  appointment_id uuid [not null, unique, ref: > appointments.id]
+  patient_id uuid [not null, ref: > patients.id]
+  doctor_id uuid [not null, ref: > doctors.id]
+  complaints text
+  diagnosis text
+  recommendations text
+  created_at timestamp [not null]
+}
+
+Table medical_records {
+  id uuid [pk]
+  patient_id uuid [not null, ref: > patients.id]
+  visit_id uuid [ref: > visits.id]
+  description text [not null]
+  created_at timestamp [not null]
+}
+
+Table services {
+  id uuid [pk]
+  name varchar [not null]
+  price numeric [not null]
+}
+
+Table payments {
+  id uuid [pk]
+  visit_id uuid [not null, ref: > visits.id]
+  service_id uuid [not null, ref: > services.id]
+  amount numeric [not null]
+  status varchar [not null]
+  paid_at timestamp
+}

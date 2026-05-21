@@ -1,0 +1,29 @@
+@startuml
+title Запись пациента на прием
+
+actor "Администратор" as Admin
+boundary "UI" as UI
+control "AppointmentUseCase" as UseCase
+entity "PatientRepository" as Patients
+entity "ScheduleRepository" as Schedule
+entity "AppointmentRepository" as Appointments
+database "PostgreSQL" as DB
+
+Admin -> UI: выбирает пациента, врача и слот
+UI -> UseCase: CreateAppointment(patientId, doctorId, slotId)
+UseCase -> Patients: GetByID(patientId)
+Patients -> DB: SELECT patient
+DB --> Patients: patient
+Patients --> UseCase: patient
+UseCase -> Schedule: GetAvailableSlot(slotId)
+Schedule -> DB: SELECT slot
+DB --> Schedule: slot
+Schedule --> UseCase: slot
+UseCase -> Appointments: Save(appointment)
+Appointments -> DB: INSERT appointment
+DB --> Appointments: saved appointment
+Appointments --> UseCase: appointment
+UseCase --> UI: appointment DTO
+UI --> Admin: запись создана
+
+@enduml

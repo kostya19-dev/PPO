@@ -1,0 +1,26 @@
+@startuml
+title Отмена записи
+
+actor "Администратор" as Admin
+boundary "UI" as UI
+control "AppointmentUseCase" as UseCase
+entity "AppointmentRepository" as Appointments
+entity "ScheduleRepository" as Schedule
+database "PostgreSQL" as DB
+
+Admin -> UI: выбирает запись и нажимает отмену
+UI -> UseCase: CancelAppointment(appointmentId)
+UseCase -> Appointments: GetByID(appointmentId)
+Appointments -> DB: SELECT appointment
+DB --> Appointments: appointment
+Appointments --> UseCase: appointment
+UseCase -> Appointments: Cancel(appointmentId)
+Appointments -> DB: UPDATE appointment status
+DB --> Appointments: ok
+UseCase -> Schedule: ReleaseSlot(slotId)
+Schedule -> DB: UPDATE slot status
+DB --> Schedule: ok
+UseCase --> UI: cancelled appointment DTO
+UI --> Admin: запись отменена
+
+@enduml
