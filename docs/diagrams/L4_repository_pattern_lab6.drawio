@@ -1,0 +1,70 @@
+<mxfile host="app.diagrams.net" version="29.6.1">
+  <diagram id="L4-repo-lab6" name="L4 Repository Lab6">
+    <mxGraphModel dx="1900" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2200" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="&lt;b&gt;L4 — Компонент доступа к данным (Repository pattern, Lab 6)&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=18;fontColor=#0b5394;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="980" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="Интерфейсы репозиториев из usecase зависят только от domain-сущностей. PostgreSQL-реализации используют Squirrel, *sql.DB и helper-функции scanXxx." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="40" y="52" width="1500" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="i_patient" value="&amp;lt;&amp;lt;interface&amp;gt;&amp;gt;&#xa;PatientRepository&#xa;Save(ctx,*domain.Patient) error&#xa;FindByID(ctx,uuid.UUID) (*domain.Patient,error)&#xa;FindAll(ctx) ([]*domain.Patient,error)&#xa;FindByEmail(ctx,string) (*domain.Patient,error)&#xa;Update(ctx,*domain.Patient) error&#xa;Delete(ctx,uuid.UUID) error" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="100" width="320" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="i_appointment" value="&amp;lt;&amp;lt;interface&amp;gt;&amp;gt;&#xa;AppointmentRepository&#xa;Save(ctx,*domain.Appointment) error&#xa;FindByID(ctx,uuid.UUID) (*domain.Appointment,error)&#xa;FindAll(ctx) ([]*domain.Appointment,error)&#xa;FindByPatient(ctx,uuid.UUID) ([]*domain.Appointment,error)&#xa;CheckSlotBusy(ctx,uuid.UUID,time.Time) (bool,error)&#xa;Update(ctx,*domain.Appointment) error&#xa;Delete(ctx,uuid.UUID) error" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="390" y="100" width="330" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="i_schedule" value="&amp;lt;&amp;lt;interface&amp;gt;&amp;gt;&#xa;ScheduleRepository&#xa;Save(ctx,*domain.ScheduleSlot) error&#xa;FindByDoctorID(ctx,uuid.UUID) ([]*domain.ScheduleSlot,error)&#xa;FindFreeSlots(ctx,uuid.UUID,time.Time) ([]*domain.ScheduleSlot,error)&#xa;Update(ctx,*domain.ScheduleSlot) error&#xa;Delete(ctx,uuid.UUID) error" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="750" y="100" width="320" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="i_visit" value="&amp;lt;&amp;lt;interface&amp;gt;&amp;gt;&#xa;VisitRepository&#xa;Save(ctx,*domain.Visit) error&#xa;FindByID(ctx,uuid.UUID) (*domain.Visit,error)&#xa;FindByAppointment(ctx,uuid.UUID) (*domain.Visit,error)&#xa;Update(ctx,*domain.Visit) error&#xa;Delete(ctx,uuid.UUID) error" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="100" width="320" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="r_patient" value="Postgres PatientRepository&#xa;- db *sql.DB&#xa;- sb sq.StatementBuilderType&#xa;Save / FindByID / FindAll / FindByEmail / Update / Delete" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#274e13;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="360" width="320" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="r_appointment" value="Postgres AppointmentRepository&#xa;- db *sql.DB&#xa;- sb sq.StatementBuilderType&#xa;Save / FindByID / FindAll / FindByPatient&#xa;CheckSlotBusy / Update / Delete" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#274e13;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="390" y="360" width="330" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="r_schedule" value="Postgres ScheduleRepository&#xa;- db *sql.DB&#xa;- sb sq.StatementBuilderType&#xa;Save / FindByDoctorID / FindFreeSlots&#xa;Update / Delete" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#274e13;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="750" y="360" width="320" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="r_visit" value="Postgres VisitRepository&#xa;- db *sql.DB&#xa;- sb sq.StatementBuilderType&#xa;Save / FindByID / FindByAppointment / Update / Delete" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#274e13;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="360" width="320" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="helpers" value="helpers.go&#xa;psql = sq.StatementBuilder.PlaceholderFormat(sq.Dollar)&#xa;psql.RunWith(db)&#xa;ensureContext(ctx)&#xa;scanPatient / scanAppointment / scanScheduleSlot / scanVisit&#xa;rowsAffected(...)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#7f6000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1460" y="340" width="300" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="entity_patient" value="domain.Patient&#xa;ID uuid.UUID&#xa;FullName string&#xa;Phone string&#xa;Email string&#xa;BirthDate time.Time&#xa;CreatedAt time.Time" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#1c4587;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="630" width="320" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="entity_appointment" value="domain.Appointment&#xa;ID uuid.UUID&#xa;PatientID uuid.UUID&#xa;DoctorID uuid.UUID&#xa;Status AppointmentStatus&#xa;Date time.Time&#xa;CreatedAt time.Time" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#1c4587;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="390" y="630" width="330" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="entity_schedule" value="domain.ScheduleSlot&#xa;ID uuid.UUID&#xa;DoctorID uuid.UUID&#xa;Date time.Time&#xa;StartTime time.Time&#xa;EndTime time.Time&#xa;Cabinet string&#xa;IsBooked bool" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#1c4587;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="750" y="630" width="320" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="entity_visit" value="domain.Visit&#xa;ID uuid.UUID&#xa;AppointmentID uuid.UUID&#xa;Complaints string&#xa;Diagnosis string&#xa;Recommendations string&#xa;Status VisitStatus&#xa;CreatedAt time.Time" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#1c4587;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="630" width="320" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="note" value="Все реализации работают с реальной PostgreSQL через *sql.DB. SQL собирается builder-ом Squirrel, а не ORM." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#7f6000;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1460" y="630" width="300" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" value="реализует" style="dashed=1;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=0;" edge="1" parent="1" source="r_patient" target="i_patient"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2" value="реализует" style="dashed=1;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=0;" edge="1" parent="1" source="r_appointment" target="i_appointment"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3" value="реализует" style="dashed=1;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=0;" edge="1" parent="1" source="r_schedule" target="i_schedule"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e4" value="реализует" style="dashed=1;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=0;" edge="1" parent="1" source="r_visit" target="i_visit"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e5" value="работает с сущностью" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endFill=0;" edge="1" parent="1" source="r_patient" target="entity_patient"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e6" value="работает с сущностью" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endFill=0;" edge="1" parent="1" source="r_appointment" target="entity_appointment"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e7" value="работает с сущностью" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endFill=0;" edge="1" parent="1" source="r_schedule" target="entity_schedule"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e8" value="работает с сущностью" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endFill=0;" edge="1" parent="1" source="r_visit" target="entity_visit"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e9" value="использует" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="r_patient" target="helpers"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e10" value="использует" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="r_appointment" target="helpers"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e11" value="использует" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="r_schedule" target="helpers"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e12" value="использует" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="r_visit" target="helpers"><mxGeometry relative="1" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,110 @@
+<mxfile host="app.diagrams.net" version="29.6.1">
+  <diagram id="L3-lab6" name="L3 Lab6">
+    <mxGraphModel dx="1800" dy="980" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2200" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="&lt;b&gt;L3 — Компоненты приложения VitaLine Clinic (Lab 6)&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=18;fontColor=#0b5394;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="900" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="Реальная сборка компонентов: CLI entrypoint, API entrypoint, bootstrap, config, logger, сервисы, PostgreSQL-репозитории и БД." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="40" y="52" width="1400" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="boundary" value="&lt;b&gt;Компоненты приложения&lt;/b&gt;&lt;br&gt;[L3 Component diagram]" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;dashPattern=8 4;fillColor=none;strokeColor=#666666;fontColor=#333333;align=left;verticalAlign=top;spacing=12;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="220" y="110" width="1580" height="1080" as="geometry" />
+        </mxCell>
+        <mxCell id="webgui" value="&lt;b&gt;Web GUI (future)&lt;/b&gt;&lt;br&gt;[External container]&lt;br&gt;Будущий клиентский интерфейс" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d9ead3;strokeColor=#82b366;fontColor=#274e13;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="180" width="150" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="operator" value="&lt;b&gt;Оператор / Тестировщик&lt;/b&gt;&lt;br&gt;[External actor]&lt;br&gt;Работает через терминал" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d9ead3;strokeColor=#82b366;fontColor=#274e13;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="330" width="150" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="cli_entry" value="&lt;b&gt;CLI entrypoint&lt;/b&gt;&#xa;cmd/cli/main.go&#xa;Парсит --config / --debug&#xa;Запускает binary CLI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#23A2D9;strokeColor=#0E7DAD;fontColor=#ffffff;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="270" y="170" width="230" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="api_entry" value="&lt;b&gt;API entrypoint&lt;/b&gt;&#xa;cmd/api/main.go&#xa;Парсит --config / --debug&#xa;Управляет lifecycle HTTP server" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#23A2D9;strokeColor=#0E7DAD;fontColor=#ffffff;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="540" y="170" width="230" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="bootstrap" value="&lt;b&gt;Bootstrap&lt;/b&gt;&#xa;internal/bootstrap&#xa;Собирает config, logger, db, repos и services" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f9cb9c;strokeColor=#b45f06;fontColor=#783f04;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="860" y="170" width="250" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="config_loader" value="&lt;b&gt;ConfigLoader&lt;/b&gt;&#xa;internal/appconfig&#xa;Load(app.json) + env override" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f9cb9c;strokeColor=#b45f06;fontColor=#783f04;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1190" y="150" width="240" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="logger" value="&lt;b&gt;Logger&lt;/b&gt;&#xa;internal/logging&#xa;log/slog&#xa;console + file, levels, debug" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f9cb9c;strokeColor=#b45f06;fontColor=#783f04;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1190" y="290" width="240" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="pgconn" value="&lt;b&gt;Postgres connection&lt;/b&gt;&#xa;storage/postgres/connection.go&#xa;Open(ctx, dsn) -&gt; *sql.DB" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f9cb9c;strokeColor=#b45f06;fontColor=#783f04;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1190" y="450" width="240" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="command_app" value="&lt;b&gt;CommandApp&lt;/b&gt;&#xa;delivery/cli/command.go&#xa;patient / schedule / appointment / visit&#xa;Подкоманды и флаги" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#23A2D9;strokeColor=#0E7DAD;fontColor=#ffffff;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="270" y="360" width="230" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="http_server" value="&lt;b&gt;HTTP Server&lt;/b&gt;&#xa;delivery/http/server.go&#xa;/health, /info&#xa;Request logging" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#23A2D9;strokeColor=#0E7DAD;fontColor=#ffffff;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="540" y="360" width="230" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="patient_service" value="&lt;b&gt;PatientService&lt;/b&gt;&#xa;Register / GetByID / GetAll&#xa;FindByEmail / Delete" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#274e13;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="250" y="650" width="240" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="appointment_service" value="&lt;b&gt;AppointmentService&lt;/b&gt;&#xa;Create / Cancel / GetByID / GetAll / GetByPatient&#xa;Использует minLeadTime из config" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#274e13;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="540" y="650" width="260" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="schedule_service" value="&lt;b&gt;ScheduleService&lt;/b&gt;&#xa;CreateSlot / GetByDoctor&#xa;GetFreeSlots / DeleteSlot" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#274e13;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="850" y="650" width="240" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="visit_service" value="&lt;b&gt;VisitService&lt;/b&gt;&#xa;Create / Complete / GetByAppointment / GetByPatient&#xa;Зависит от VisitRepository и AppointmentRepository" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#274e13;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1140" y="650" width="280" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="patient_repo" value="&lt;b&gt;PatientRepository&lt;/b&gt;&#xa;storage/postgres/patient.go" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f3f3;strokeColor=#999999;fontColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="250" y="870" width="240" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="appointment_repo" value="&lt;b&gt;AppointmentRepository&lt;/b&gt;&#xa;storage/postgres/appointment.go" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f3f3;strokeColor=#999999;fontColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="540" y="870" width="260" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="schedule_repo" value="&lt;b&gt;ScheduleRepository&lt;/b&gt;&#xa;storage/postgres/schedule.go" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f3f3;strokeColor=#999999;fontColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="850" y="870" width="240" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="visit_repo" value="&lt;b&gt;VisitRepository&lt;/b&gt;&#xa;storage/postgres/visit.go" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f3f3;strokeColor=#999999;fontColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1140" y="870" width="280" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="config_file" value="&lt;b&gt;config/app.json&lt;/b&gt;&#xa;DB URL, HTTP address, log level/file, minLeadTime" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#7f6000;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1500" y="150" width="240" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="log_file" value="&lt;b&gt;logs/clinic.log&lt;/b&gt;&#xa;Ошибки, действия пользователя, HTTP requests" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#7f6000;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1500" y="300" width="240" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="postgres" value="&lt;b&gt;PostgreSQL&lt;/b&gt;&#xa;Реальная база приложения" style="shape=cylinder3;size=15;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#23A2D9;strokeColor=#0E7DAD;fontColor=#ffffff;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1510" y="450" width="220" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" value="использует (future)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="webgui" target="api_entry"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2" value="запускает" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="operator" target="cli_entry"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3" value="bootstrap.New(...)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="cli_entry" target="bootstrap"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e4" value="bootstrap.New(...)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="api_entry" target="bootstrap"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e5" value="создаёт и запускает" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="cli_entry" target="command_app"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e6" value="создаёт и запускает" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="api_entry" target="http_server"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e7" value="load()" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="bootstrap" target="config_loader"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e8" value="читает" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="config_loader" target="config_file"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e9" value="new logger" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="bootstrap" target="logger"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e10" value="writes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="logger" target="log_file"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e11" value="Open(ctx, dsn)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="bootstrap" target="pgconn"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e12" value="database/sql" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="pgconn" target="postgres"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e13" value="вызывает" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="command_app" target="patient_service"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e14" value="вызывает" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="command_app" target="appointment_service"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e15" value="вызывает" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="command_app" target="schedule_service"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e16" value="вызывает" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="command_app" target="visit_service"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e17" value="future handlers" style="dashed=1;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=0;" edge="1" parent="1" source="http_server" target="appointment_service"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e18" value="logs requests" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="http_server" target="logger"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e19" value="health check" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="http_server" target="pgconn"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e20" value="depends on" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="patient_service" target="patient_repo"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e21" value="depends on" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="appointment_service" target="appointment_repo"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e22" value="depends on" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="schedule_service" target="schedule_repo"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e23" value="depends on" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="visit_service" target="visit_repo"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e24" value="uses appointments" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="visit_service" target="appointment_repo"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e25" value="Squirrel + *sql.DB" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="patient_repo" target="pgconn"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e26" value="Squirrel + *sql.DB" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="appointment_repo" target="pgconn"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e27" value="Squirrel + *sql.DB" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="schedule_repo" target="pgconn"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e28" value="Squirrel + *sql.DB" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="visit_repo" target="pgconn"><mxGeometry relative="1" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
