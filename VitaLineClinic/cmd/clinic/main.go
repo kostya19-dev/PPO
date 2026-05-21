@@ -13,11 +13,13 @@ import (
 
 	"vitaline-clinic/internal/bootstrap"
 	"vitaline-clinic/internal/delivery/cli"
+	guidelivery "vitaline-clinic/internal/delivery/gui"
 	httpdelivery "vitaline-clinic/internal/delivery/http"
 )
 
 const (
 	modeAPI = "api"
+	modeGUI = "gui"
 	modeCLI = "cli"
 )
 
@@ -44,8 +46,9 @@ func run(args []string) error {
 
 	ctx := context.Background()
 	app, err := bootstrap.New(ctx, bootstrap.Options{
-		ConfigPath: *configPath,
-		Debug:      *debug,
+		ConfigPath:   *configPath,
+		Debug:        *debug,
+		SkipDatabase: mode == modeGUI,
 	})
 	if err != nil {
 		return fmt.Errorf("bootstrap failed: %w", err)
@@ -59,6 +62,8 @@ func run(args []string) error {
 	switch mode {
 	case modeAPI:
 		return runAPI(app)
+	case modeGUI:
+		return runGUI(app)
 	case modeCLI:
 		return runCLI(ctx, app, fs.Args())
 	default:
@@ -67,7 +72,7 @@ func run(args []string) error {
 }
 
 func isMode(value string) bool {
-	return value == modeAPI || value == modeCLI
+	return value == modeAPI || value == modeGUI || value == modeCLI
 }
 
 func runAPI(app *bootstrap.App) error {
@@ -81,6 +86,17 @@ func runAPI(app *bootstrap.App) error {
 			Schedule:     app.UseCases.Schedule(),
 			Visits:       app.UseCases.Visits(),
 		},
+		app.Logger,
+	)
+	return serve(app, server)
+}
+
+func runGUI(app *bootstrap.App) error {
+	services := guidelivery.NewBackendServices(app.GUIAPIBaseURL, app.Logger)
+	server := guidelivery.NewServer(
+		app.GUIAddress,
+		app.AppName,
+		services,
 		app.Logger,
 	)
 	return serve(app, server)

@@ -13,6 +13,7 @@ func TestLoad_ConfigFileAndEnvOverride(t *testing.T) {
 	content := `{
 		"app": {"name": "Test App"},
 		"api": {"address": ":9090"},
+		"gui": {"address": ":9091", "api_base_url": "http://localhost:9090"},
 		"database": {"url": "postgres://from-file"},
 		"logging": {"level": "warn", "file": "./logs/test.log"},
 		"business": {"appointment_min_lead_time_minutes": 45}
@@ -24,6 +25,7 @@ func TestLoad_ConfigFileAndEnvOverride(t *testing.T) {
 
 	t.Setenv("DATABASE_URL", "postgres://from-env")
 	t.Setenv("VITALINE_APP_NAME", "Env App")
+	t.Setenv("VITALINE_GUI_ADDRESS", ":9092")
 
 	cfg, resolved, err := Load(path)
 	if err != nil {
@@ -38,6 +40,9 @@ func TestLoad_ConfigFileAndEnvOverride(t *testing.T) {
 	}
 	if cfg.App.Name != "Env App" {
 		t.Fatalf("expected app env override, got %s", cfg.App.Name)
+	}
+	if cfg.GUI.Address != ":9092" {
+		t.Fatalf("expected gui env override, got %s", cfg.GUI.Address)
 	}
 	if cfg.Business.AppointmentMinLeadTimeMinutes != 45 {
 		t.Fatalf("unexpected business parameter: %d", cfg.Business.AppointmentMinLeadTimeMinutes)
@@ -67,6 +72,12 @@ func TestLoad_AppliesDefaults(t *testing.T) {
 	}
 	if cfg.API.Address != ":8080" {
 		t.Fatalf("unexpected default api address: %s", cfg.API.Address)
+	}
+	if cfg.GUI.Address != ":8090" {
+		t.Fatalf("unexpected default gui address: %s", cfg.GUI.Address)
+	}
+	if cfg.GUI.APIBaseURL != "http://localhost:8080" {
+		t.Fatalf("unexpected default gui api base url: %s", cfg.GUI.APIBaseURL)
 	}
 	if cfg.Logging.Level != "info" {
 		t.Fatalf("unexpected default log level: %s", cfg.Logging.Level)

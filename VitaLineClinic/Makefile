@@ -35,9 +35,10 @@ RECOMMENDATIONS ?= Bed rest
 ARGS ?= patient list
 GO_TEST_FLAGS ?=
 UNIT_TEST_PACKAGES ?= ./cmd/clinic ./internal/appconfig ./internal/delivery/http ./internal/storage/memory ./internal/usecase
+GUI_URL ?= http://localhost:8090
 
 .PHONY: help build demo \
-	docker-up docker-down docker-ps docker-logs api-health api-info \
+	docker-up docker-down docker-ps docker-logs docker-gui-logs api-health api-info gui-status gui-run \
 	db-seed db-seed-local db-seed-docker db-counts \
 	test test-verbose test-postgres-connection test-integration \
 	cli \
@@ -48,7 +49,7 @@ UNIT_TEST_PACKAGES ?= ./cmd/clinic ./internal/appconfig ./internal/delivery/http
 	logs logs-follow
 
 help:
-	@printf '\nVitaLine Clinic - lab 6 menu\n'
+	@printf '\nVitaLine Clinic - lab 7 menu\n'
 	@printf 'Usage: make <target> [VARIABLE=value]\n\n'
 	@printf 'Build and runtime:\n'
 	@printf '  make build                         build dist/clinic single binary\n'
@@ -56,12 +57,14 @@ help:
 	@printf '  make test-verbose                  run safe Go tests with verbose output\n'
 	@printf '  make test-postgres-connection      run PostgreSQL connection unit tests\n'
 	@printf '  make test-integration              run PostgreSQL integration tests and reseed DB\n'
-	@printf '  make docker-up                     start PostgreSQL, migrations and API\n'
+	@printf '  make docker-up                     start PostgreSQL, migrations, backend and frontend\n'
 	@printf '                                      use DOCKER="sudo docker" if Docker socket needs sudo\n'
 	@printf '  make docker-down                   stop Docker Compose services\n'
 	@printf '  make docker-ps                     show containers\n'
 	@printf '  make api-health                    GET /health\n'
 	@printf '  make api-info                      GET /info\n\n'
+	@printf '  make gui-status                    check GUI HTTP page\n'
+	@printf '  make gui-run                       run GUI mode locally on configured address\n\n'
 	@printf 'Database:\n'
 	@printf '  make db-seed                       apply schema.sql and seed.sql to localhost DB\n'
 	@printf '  make db-seed-docker                apply schema.sql and seed.sql inside Docker DB\n'
@@ -122,6 +125,9 @@ docker-ps:
 docker-logs:
 	@$(COMPOSE) logs -f api
 
+docker-gui-logs:
+	@$(COMPOSE) logs -f frontend
+
 api-health:
 	@curl -s http://localhost:8080/health
 	@printf '\n'
@@ -129,6 +135,12 @@ api-health:
 api-info:
 	@curl -s http://localhost:8080/info
 	@printf '\n'
+
+gui-status:
+	@curl -s -o /dev/null -w "GUI status: %{http_code} $(GUI_URL)/patients\n" "$(GUI_URL)/patients"
+
+gui-run:
+	@$(APP) gui --config $(CONFIG)
 
 db-seed: db-seed-local
 

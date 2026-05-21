@@ -441,3 +441,77 @@ docker compose up -d --build
 docker compose ps
 docker compose logs -f api
 ```
+
+## 19. Пользовательский графический интерфейс
+
+В рамках лабораторной работы №7 добавлен графический веб-интерфейс для основных бизнес-сценариев клиники. Технический UI сохранен: та же бинарная утилита `clinic` продолжает запускаться в CLI-режиме через команды и флаги.
+
+Код GUI:
+
+- `VitaLineClinic/cmd/clinic/main.go` — единая точка входа, режимы `cli`, `api`, `gui`;
+- `VitaLineClinic/internal/delivery/gui/server.go` — HTTP handlers графического интерфейса;
+- `VitaLineClinic/internal/delivery/gui/templates.go` — HTML/CSS представления;
+- `VitaLineClinic/internal/delivery/gui/viewmodel.go` — модели данных для экранов;
+- `VitaLineClinic/internal/delivery/gui/presenter.go` — подготовка DTO к отображению;
+- `VitaLineClinic/internal/delivery/gui/backend_client.go` — компонент связи GUI с backend API.
+
+GUI реализован как MVP/MV*-подобный слой:
+
+- **View** — HTML-шаблоны в `templates.go`;
+- **ViewModel** — структуры для экранов в `viewmodel.go`;
+- **Presenter** — преобразование данных usecase/API в удобный для отображения вид;
+- **Controller** — handlers в `server.go`;
+- **Model boundary** — usecase-интерфейсы, которые GUI использует напрямую или через HTTP-клиент.
+
+L4-диаграмма компонента GUI:
+
+```mermaid
+flowchart LR
+    User["Администратор клиники"]
+    Browser["Browser"]
+    GuiServer["GUI Server<br/>internal/delivery/gui/server.go"]
+    Templates["View<br/>templates.go"]
+    VM["ViewModel<br/>viewmodel.go"]
+    Presenter["Presenter<br/>presenter.go"]
+    BackendClient["Backend Client<br/>backend_client.go"]
+    API["Backend API<br/>internal/delivery/http"]
+    UseCases["Usecase services"]
+    DB["PostgreSQL"]
+
+    User --> Browser
+    Browser --> GuiServer
+    GuiServer --> Templates
+    GuiServer --> VM
+    GuiServer --> Presenter
+    GuiServer --> BackendClient
+    BackendClient --> API
+    API --> UseCases
+    UseCases --> DB
+```
+
+После лабораторной работы №7 приложение запускается в Docker Compose как четыре контейнера:
+
+- `postgres` — база данных;
+- `migrations` — одноразовый контейнер применения схемы и seed-данных;
+- `api` — backend HTTP API;
+- `frontend` — GUI, который обращается к backend API.
+
+Запуск всего приложения:
+
+```bash
+docker compose up -d --build
+docker compose ps
+```
+
+Открыть GUI:
+
+```text
+http://localhost:8090/patients
+```
+
+Проверка из консоли:
+
+```bash
+make gui-status
+make api-health
+```

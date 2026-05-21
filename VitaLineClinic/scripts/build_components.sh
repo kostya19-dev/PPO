@@ -35,6 +35,9 @@ Quick start:
 
 4. Run API
    ./clinic api --config ./config/app.json --debug
+
+5. Run GUI
+   ./clinic gui --config ./config/app.json --debug
 EOF
 
 printf 'Components built successfully in %s\n' "$DIST_DIR"
