@@ -6,6 +6,10 @@
   "api": {
     "address": ":8080"
   },
+  "gui": {
+    "address": ":8090",
+    "api_base_url": "http://localhost:8080"
+  },
   "database": {
     "url": "postgres://vitaline_app:vitaline_app@localhost:5432/vitaline_clinic?sslmode=disable"
   },

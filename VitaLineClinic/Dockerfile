@@ -24,6 +24,7 @@ ENV VITALINE_LOG_FILE=/app/logs/clinic.log
 VOLUME ["/app/logs"]
 
 EXPOSE 8080
+EXPOSE 8090
 
 USER app
 

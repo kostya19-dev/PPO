@@ -14,6 +14,7 @@ import (
 type Config struct {
 	App      AppConfig      `json:"app"`
 	API      APIConfig      `json:"api"`
+	GUI      GUIConfig      `json:"gui"`
 	Database DatabaseConfig `json:"database"`
 	Logging  LoggingConfig  `json:"logging"`
 	Business BusinessConfig `json:"business"`
@@ -26,6 +27,11 @@ type AppConfig struct {
 
 type APIConfig struct {
 	Address string `json:"address"`
+}
+
+type GUIConfig struct {
+	Address    string `json:"address"`
+	APIBaseURL string `json:"api_base_url"`
 }
 
 type DatabaseConfig struct {
@@ -105,6 +111,12 @@ func (c Config) ValidateWithOptions(opts ValidateOptions) error {
 	if strings.TrimSpace(c.API.Address) == "" {
 		return domain.NewValidationError("api.address", "не может быть пустым")
 	}
+	if strings.TrimSpace(c.GUI.Address) == "" {
+		return domain.NewValidationError("gui.address", "не может быть пустым")
+	}
+	if strings.TrimSpace(c.GUI.APIBaseURL) == "" {
+		return domain.NewValidationError("gui.api_base_url", "не может быть пустым")
+	}
 	if c.Business.AppointmentMinLeadTimeMinutes < 0 {
 		return domain.NewValidationError("business.appointment_min_lead_time_minutes", "не может быть отрицательным")
 	}
@@ -121,6 +133,12 @@ func (c *Config) applyDefaults() {
 	if strings.TrimSpace(c.API.Address) == "" {
 		c.API.Address = ":8080"
 	}
+	if strings.TrimSpace(c.GUI.Address) == "" {
+		c.GUI.Address = ":8090"
+	}
+	if strings.TrimSpace(c.GUI.APIBaseURL) == "" {
+		c.GUI.APIBaseURL = "http://localhost:8080"
+	}
 	if strings.TrimSpace(c.Logging.Level) == "" {
 		c.Logging.Level = "info"
 	}
@@ -136,6 +154,8 @@ func (c *Config) applyEnvOverrides() error {
 	overrideString(&c.App.Name, os.Getenv("VITALINE_APP_NAME"))
 	overrideString(&c.Database.URL, os.Getenv("DATABASE_URL"))
 	overrideString(&c.API.Address, os.Getenv("VITALINE_HTTP_ADDRESS"))
+	overrideString(&c.GUI.Address, os.Getenv("VITALINE_GUI_ADDRESS"))
+	overrideString(&c.GUI.APIBaseURL, os.Getenv("VITALINE_GUI_API_BASE_URL"))
 	overrideString(&c.Logging.Level, os.Getenv("VITALINE_LOG_LEVEL"))
 	overrideString(&c.Logging.File, os.Getenv("VITALINE_LOG_FILE"))
 	overrideString(&c.App.Environment, os.Getenv("VITALINE_ENV"))

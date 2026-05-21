@@ -60,5 +60,30 @@ services:
     ports:
       - "${VITALINE_API_PORT:-8080}:8080"
 
+  frontend:
+    image: vitaline-frontend:local
+    build:
+      context: ./VitaLineClinic
+      dockerfile: Dockerfile
+    container_name: vitaline_frontend
+    command: ["gui"]
+    restart: unless-stopped
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+      api:
+        condition: service_started
+    environment:
+      VITALINE_APP_NAME: VitaLine Clinic
+      VITALINE_ENV: docker
+      VITALINE_GUI_ADDRESS: :8090
+      VITALINE_GUI_API_BASE_URL: http://api:8080
+      VITALINE_LOG_LEVEL: ${VITALINE_LOG_LEVEL:-info}
+      VITALINE_LOG_FILE: /app/logs/gui.log
+    volumes:
+      - ./VitaLineClinic/logs:/app/logs
+    ports:
+      - "${VITALINE_GUI_PORT:-8090}:8090"
+
 volumes:
   vitaline_pgdata:

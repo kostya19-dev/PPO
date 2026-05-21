@@ -14,8 +14,9 @@ import (
 )
 
 type Options struct {
-	ConfigPath string
-	Debug      bool
+	ConfigPath   string
+	Debug        bool
+	SkipDatabase bool
 }
 
 type UseCases interface {
@@ -65,18 +66,22 @@ func (h *databaseHealthChecker) Ping(ctx context.Context) error {
 }
 
 type App struct {
-	ConfigPath string
-	AppName    string
-	APIAddress string
-	Logger     *slog.Logger
-	UseCases   UseCases
-	Health     HealthChecker
+	ConfigPath    string
+	AppName       string
+	APIAddress    string
+	GUIAddress    string
+	GUIAPIBaseURL string
+	Logger        *slog.Logger
+	UseCases      UseCases
+	Health        HealthChecker
 
 	closers []closer
 }
 
 func New(ctx context.Context, opts Options) (*App, error) {
-	cfg, configPath, err := appconfig.LoadWithOptions(opts.ConfigPath, appconfig.LoadOptions{RequireDatabase: true})
+	cfg, configPath, err := appconfig.LoadWithOptions(opts.ConfigPath, appconfig.LoadOptions{
+		RequireDatabase: !opts.SkipDatabase,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -84,6 +89,29 @@ func New(ctx context.Context, opts Options) (*App, error) {
 	logs, err := logging.New(cfg.Logging, opts.Debug)
 	if err != nil {
 		return nil, err
+	}
+
+	if opts.SkipDatabase {
+		app := &App{
+			ConfigPath:    configPath,
+			AppName:       cfg.App.Name,
+			APIAddress:    cfg.API.Address,
+			GUIAddress:    cfg.GUI.Address,
+			GUIAPIBaseURL: cfg.GUI.APIBaseURL,
+			Logger:        logs.Logger,
+			closers:       []closer{logs},
+		}
+		app.Logger.Info(
+			"application bootstrap completed",
+			"config_path", app.ConfigPath,
+			"app_name", cfg.App.Name,
+			"environment", cfg.App.Environment,
+			"debug", opts.Debug,
+			"http_address", cfg.API.Address,
+			"gui_address", cfg.GUI.Address,
+			"gui_api_base_url", cfg.GUI.APIBaseURL,
+		)
+		return app, nil
 	}
 
 	db, err := postgres.Open(ctx, cfg.Database.URL)
@@ -108,10 +136,12 @@ func New(ctx context.Context, opts Options) (*App, error) {
 	visitSvc := usecase.NewVisitService(visitRepo, appointmentRepo)
 
 	app := &App{
-		ConfigPath: configPath,
-		AppName:    cfg.App.Name,
-		APIAddress: cfg.API.Address,
-		Logger:     logs.Logger,
+		ConfigPath:    configPath,
+		AppName:       cfg.App.Name,
+		APIAddress:    cfg.API.Address,
+		GUIAddress:    cfg.GUI.Address,
+		GUIAPIBaseURL: cfg.GUI.APIBaseURL,
+		Logger:        logs.Logger,
 		UseCases: &useCases{
 			patients:     patientSvc,
 			appointments: appointmentSvc,
@@ -129,6 +159,7 @@ func New(ctx context.Context, opts Options) (*App, error) {
 		"environment", cfg.App.Environment,
 		"debug", opts.Debug,
 		"http_address", cfg.API.Address,
+		"gui_address", cfg.GUI.Address,
 		"appointment_min_lead_time_minutes", cfg.Business.AppointmentMinLeadTimeMinutes,
 	)
 
