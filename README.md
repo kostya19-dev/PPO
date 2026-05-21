@@ -308,3 +308,55 @@ DBML выбран как текстовый формат, потому что е
 Актуальная L4-диаграмма компонента доступа к данным:
 
 ![C4 L4 Repository](docs/diagrams/L4_repository_pattern.drawio.png)
+
+## 17. Технологический UI
+
+В рамках лабораторной работы №5 реализован технический пользовательский интерфейс. Это консольное приложение, которое позволяет вручную прогнать основные use-case без графического интерфейса.
+
+Код компонента:
+
+- `VitaLineClinic/cmd/clinic/main.go` — единая точка запуска технического UI;
+- `VitaLineClinic/internal/delivery/cli/cli.go` — меню, ввод данных и вывод результатов;
+- `VitaLineClinic/internal/storage/memory` — in-memory репозитории для запуска без внешней БД;
+- `VitaLineClinic/internal/delivery/cli/cli_system_test.go` — системный тест технического UI.
+
+Технический UI работает через usecase-интерфейсы и не обращается напрямую к доменным сущностям хранения. Поэтому UI можно заменить на GUI, не переписывая бизнес-логику.
+
+```mermaid
+flowchart LR
+    User["Администратор / врач"]
+    CLI["Technical UI<br/>internal/delivery/cli"]
+    PatientUC["PatientService"]
+    ScheduleUC["ScheduleService"]
+    AppointmentUC["AppointmentService"]
+    VisitUC["VisitService"]
+    Repo["Repository interfaces"]
+    Memory["In-memory storage"]
+
+    User --> CLI
+    CLI --> PatientUC
+    CLI --> ScheduleUC
+    CLI --> AppointmentUC
+    CLI --> VisitUC
+    PatientUC --> Repo
+    ScheduleUC --> Repo
+    AppointmentUC --> Repo
+    VisitUC --> Repo
+    Repo --> Memory
+```
+
+Запуск технического UI:
+
+```bash
+cd VitaLineClinic
+go run ./cmd/clinic
+```
+
+Покрытые сценарии:
+
+- регистрация, поиск, просмотр и удаление пациента;
+- создание, просмотр и удаление слотов расписания;
+- создание, отмена и просмотр записей на прием;
+- начало, завершение и просмотр приема.
+
+Системный тест запускает технический UI со scripted input и проверяет прохождение основных бизнес-сценариев через консольное меню.
