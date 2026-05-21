@@ -265,3 +265,46 @@ DBML выбран как текстовый формат, потому что е
 ![C4 L4 Service Layer](docs/diagrams/L4_service%20layer.drawio.png)
 
 Модульные тесты проверяют успешные сценарии, валидацию входных данных, ошибки статусов и ошибки репозиториев. Для изоляции бизнес-логики в тестах используются ручные mock-репозитории.
+
+## 16. Компонент доступа к данным
+
+В рамках лабораторной работы №4 реализован компонент доступа к данным для PostgreSQL.
+
+Код компонента:
+
+- `VitaLineClinic/internal/storage/postgres/connection.go` — подключение к PostgreSQL и проверка DSN;
+- `VitaLineClinic/internal/storage/postgres/patient.go` — репозиторий пациентов;
+- `VitaLineClinic/internal/storage/postgres/appointment.go` — репозиторий записей на прием;
+- `VitaLineClinic/internal/storage/postgres/schedule.go` — репозиторий расписания;
+- `VitaLineClinic/internal/storage/postgres/visit.go` — репозиторий приемов;
+- `VitaLineClinic/internal/storage/postgres/helpers.go` — общая обработка ошибок, сканирование строк и вспомогательные функции;
+- `VitaLineClinic/migrations/schema.sql` — SQL-схема БД.
+
+Компонент реализует интерфейсы, объявленные в usecase-слое:
+
+- `PatientRepository`;
+- `ScheduleRepository`;
+- `AppointmentRepository`;
+- `VisitRepository`.
+
+За счет этого бизнес-логика зависит не от PostgreSQL напрямую, а от абстракций. Конкретная реализация хранилища подключается снаружи.
+
+В репозиториях есть обработка основных ошибок:
+
+- пустая строка подключения возвращает validation error;
+- отсутствие строки в БД преобразуется в `domain.ErrNotFound`;
+- ошибки SQL-запросов оборачиваются с контекстом операции;
+- операции update/delete проверяют количество затронутых строк.
+
+Для компонента доступа к данным подготовлены интеграционные тесты:
+
+- сохранение и чтение данных;
+- обновление сущностей;
+- удаление сущностей;
+- проверка поиска свободных слотов и занятости записи.
+
+Интеграционные тесты запускаются при наличии переменной окружения `TEST_DATABASE_URL` или `DATABASE_URL`. Если строка подключения не задана, тесты пропускаются.
+
+Актуальная L4-диаграмма компонента доступа к данным:
+
+![C4 L4 Repository](docs/diagrams/L4_repository_pattern.drawio.png)
