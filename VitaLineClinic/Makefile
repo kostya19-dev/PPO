@@ -6,10 +6,9 @@ CONFIG ?= ./config/app.json
 DOCKER ?= docker
 COMPOSE ?= $(DOCKER) compose -f ../docker-compose.yml --project-directory ..
 DB_HOST ?= localhost
-DB_PORT ?= 5432
-DB_USER ?= vitaline_app
+DB_PORT ?= 27017
 DB_NAME ?= vitaline_clinic
-DB_PASSWORD ?= vitaline_app
+DATABASE_URL ?= mongodb://localhost:27017
 
 DOCTOR_ID ?= aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
 PATIENT_ID ?= 22222222-2222-2222-2222-222222222222
@@ -49,7 +48,7 @@ GUI_URL ?= http://localhost:8090
 	logs logs-follow
 
 help:
-	@printf '\nVitaLine Clinic - lab 8 menu\n'
+	@printf '\nVitaLine Clinic - lab 9 menu\n'
 	@printf 'Usage: make <target> [VARIABLE=value]\n\n'
 	@printf 'Build and runtime:\n'
 	@printf '  make build                         build dist/clinic single binary\n'
@@ -57,7 +56,7 @@ help:
 	@printf '  make test-verbose                  run safe Go tests with verbose output\n'
 	@printf '  make test-postgres-connection      run PostgreSQL connection unit tests\n'
 	@printf '  make test-integration              run PostgreSQL integration tests and reseed DB\n'
-	@printf '  make docker-up                     start PostgreSQL, migrations, backend and frontend\n'
+	@printf '  make docker-up                     start MongoDB, migrations, backend and frontend\n'
 	@printf '                                      use DOCKER="sudo docker" if Docker socket needs sudo\n'
 	@printf '  make docker-down                   stop Docker Compose services\n'
 	@printf '  make docker-ps                     show containers\n'
@@ -66,8 +65,8 @@ help:
 	@printf '  make gui-status                    check GUI HTTP page\n'
 	@printf '  make gui-run                       run GUI mode locally on configured address\n\n'
 	@printf 'Database:\n'
-	@printf '  make db-seed                       apply schema.sql and seed.sql to localhost DB\n'
-	@printf '  make db-seed-docker                apply schema.sql and seed.sql inside Docker DB\n'
+	@printf '  make db-seed                       apply MongoDB migration/seed script to localhost DB\n'
+	@printf '  make db-seed-docker                apply MongoDB migration/seed script inside Docker DB\n'
 	@printf '  make db-counts                     show row counts\n\n'
 	@printf 'Generic CLI:\n'
 	@printf '  make cli ARGS="patient list"\n\n'
@@ -110,8 +109,8 @@ test-postgres-connection:
 	@go test $(GO_TEST_FLAGS) ./internal/storage/postgres -run 'TestOpen'
 
 test-integration:
-	@printf 'Running PostgreSQL integration tests. Test tables will be reset, then seed data will be restored.\n'
-	@go test $(GO_TEST_FLAGS) ./internal/storage/postgres; status=$$?; $(MAKE) db-seed >/dev/null; exit $$status
+	@printf 'Running storage integration tests. PostgreSQL tests run only when TEST_DATABASE_URL or DATABASE_URL points to PostgreSQL.\n'
+	@go test $(GO_TEST_FLAGS) ./internal/storage/postgres
 
 docker-up:
 	@$(COMPOSE) up -d --build
@@ -145,14 +144,13 @@ gui-run:
 db-seed: db-seed-local
 
 db-seed-local:
-	@PGPASSWORD="$(DB_PASSWORD)" psql -h "$(DB_HOST)" -p "$(DB_PORT)" -U "$(DB_USER)" -d "$(DB_NAME)" -f migrations/schema.sql
-	@PGPASSWORD="$(DB_PASSWORD)" psql -h "$(DB_HOST)" -p "$(DB_PORT)" -U "$(DB_USER)" -d "$(DB_NAME)" -f migrations/seed.sql
+	@MONGODB_DATABASE="$(DB_NAME)" mongosh "$(DATABASE_URL)/$(DB_NAME)" migrations/mongo/001-init.js
 
 db-seed-docker:
 	@$(COMPOSE) up --force-recreate migrations
 
 db-counts:
-	@PGPASSWORD="$(DB_PASSWORD)" psql -h "$(DB_HOST)" -p "$(DB_PORT)" -U "$(DB_USER)" -d "$(DB_NAME)" -c 'select (select count(*) from patients) patients, (select count(*) from appointments) appointments, (select count(*) from schedule_slots) slots, (select count(*) from visits) visits, (select count(*) from emergency_requests) emergency_requests, (select count(*) from reschedule_offers) reschedule_offers;'
+	@$(DOCKER) exec vitaline_mongo mongosh "$(DB_NAME)" --quiet --eval 'printjson({patients: db.patients.countDocuments(), appointments: db.appointments.countDocuments(), slots: db.schedule_slots.countDocuments(), visits: db.visits.countDocuments(), emergency_requests: db.emergency_requests.countDocuments(), reschedule_offers: db.reschedule_offers.countDocuments()})'
 
 cli:
 	@$(APP) --config $(CONFIG) $(ARGS)

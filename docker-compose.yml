@@ -1,40 +1,35 @@
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: vitaline_postgres
+  mongo:
+    image: mongo:7
+    container_name: vitaline_mongo
     restart: unless-stopped
-    environment:
-      POSTGRES_USER: vitaline_app
-      POSTGRES_PASSWORD: vitaline_app
-      POSTGRES_DB: vitaline_clinic
     ports:
-      - "5432:5432"
+      - "27017:27017"
     volumes:
-      - vitaline_pgdata:/var/lib/postgresql/data
+      - vitaline_mongodata:/data/db
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U vitaline_app -d vitaline_clinic"]
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'quit(db.adminCommand({ ping: 1 }).ok ? 0 : 1)'"]
       interval: 5s
       timeout: 3s
-      retries: 5
+      retries: 10
 
   migrations:
-    image: postgres:16-alpine
+    image: mongo:7
     container_name: vitaline_migrations
     restart: "no"
     depends_on:
-      postgres:
+      mongo:
         condition: service_healthy
     environment:
-      PGPASSWORD: vitaline_app
+      MONGODB_URI: mongodb://mongo:27017
+      MONGODB_DATABASE: vitaline_clinic
     volumes:
-      - ./VitaLineClinic/migrations/schema.sql:/migrations/01-schema.sql:ro
-      - ./VitaLineClinic/migrations/seed.sql:/migrations/02-seed.sql:ro
+      - ./VitaLineClinic/migrations/mongo/001-init.js:/migrations/001-init.js:ro
     command:
       - sh
       - -c
       - |
-        psql -h postgres -U vitaline_app -d vitaline_clinic -v ON_ERROR_STOP=1 -f /migrations/01-schema.sql
-        psql -h postgres -U vitaline_app -d vitaline_clinic -v ON_ERROR_STOP=1 -f /migrations/02-seed.sql
+        mongosh "$$MONGODB_URI/$$MONGODB_DATABASE" /migrations/001-init.js
 
   api:
     image: vitaline-backend:local
@@ -50,7 +45,9 @@ services:
     environment:
       VITALINE_APP_NAME: VitaLine Clinic
       VITALINE_ENV: docker
-      DATABASE_URL: postgres://vitaline_app:vitaline_app@postgres:5432/vitaline_clinic?sslmode=disable
+      VITALINE_DATABASE_DRIVER: mongodb
+      DATABASE_URL: mongodb://mongo:27017
+      MONGODB_DATABASE: vitaline_clinic
       VITALINE_HTTP_ADDRESS: :8080
       VITALINE_LOG_LEVEL: ${VITALINE_LOG_LEVEL:-info}
       VITALINE_LOG_FILE: /app/logs/backend.log
@@ -86,4 +83,4 @@ services:
       - "${VITALINE_GUI_PORT:-8090}:8090"
 
 volumes:
-  vitaline_pgdata:
+  vitaline_mongodata:

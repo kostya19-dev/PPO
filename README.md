@@ -583,3 +583,116 @@ docker compose up -d --build
 ```text
 http://localhost:8090/emergencies
 ```
+
+## 21. Горизонтальный срез: MongoDB
+
+В рамках лабораторной работы №9 приложение переведено на MongoDB как основной способ работы с внешними данными. PostgreSQL-реализация сохранена в коде, но выбор конкретного хранилища теперь выполняется через конфигурацию.
+
+Файл конфигурации:
+
+```text
+VitaLineClinic/config/app.json
+```
+
+MongoDB-режим:
+
+```json
+"database": {
+  "driver": "mongodb",
+  "url": "mongodb://localhost:27017",
+  "name": "vitaline_clinic"
+}
+```
+
+Новый слой доступа к данным:
+
+```text
+VitaLineClinic/internal/storage/mongodb
+```
+
+Он реализует те же интерфейсы, что и PostgreSQL-репозитории:
+
+```text
+PatientRepository
+AppointmentRepository
+ScheduleRepository
+VisitRepository
+EmergencyRepository
+```
+
+Выбор реализации находится в:
+
+```text
+VitaLineClinic/internal/bootstrap/bootstrap.go
+```
+
+Смысл горизонтального среза:
+
+```text
+GUI / API / usecase не меняются
+меняется только storage layer
+```
+
+Docker Compose после лабораторной работы №9 поднимает четыре контейнера:
+
+- `mongo` — MongoDB;
+- `migrations` — одноразовый контейнер `mongosh`;
+- `api` — backend;
+- `frontend` — GUI.
+
+Скрипт миграции/инициализации MongoDB:
+
+```text
+VitaLineClinic/migrations/mongo/001-init.js
+```
+
+Он создает индексы и демонстрационные данные для коллекций:
+
+```text
+patients
+appointments
+schedule_slots
+visits
+emergency_requests
+reschedule_offers
+```
+
+L4-диаграмма горизонтального среза:
+
+```mermaid
+flowchart LR
+    UseCases["Usecase services"]
+    RepoInterfaces["Repository interfaces"]
+    PostgresRepo["PostgreSQL repositories"]
+    MongoRepo["MongoDB repositories"]
+    PostgresDB["PostgreSQL"]
+    MongoDB["MongoDB"]
+    Config["database.driver"]
+
+    UseCases --> RepoInterfaces
+    Config --> PostgresRepo
+    Config --> MongoRepo
+    RepoInterfaces --> PostgresRepo
+    RepoInterfaces --> MongoRepo
+    PostgresRepo --> PostgresDB
+    MongoRepo --> MongoDB
+```
+
+Запуск:
+
+```bash
+docker compose up -d --build
+docker compose ps
+```
+
+Проверка данных в MongoDB:
+
+```bash
+docker exec -it vitaline_mongo mongosh vitaline_clinic --eval 'db.patients.find().limit(5)'
+```
+
+Подробное описание для защиты:
+
+```text
+docs/lab9_horizontal_slice.md
+```

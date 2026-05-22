@@ -35,7 +35,9 @@ type GUIConfig struct {
 }
 
 type DatabaseConfig struct {
-	URL string `json:"url"`
+	Driver string `json:"driver"`
+	URL    string `json:"url"`
+	Name   string `json:"name"`
 }
 
 type LoggingConfig struct {
@@ -99,8 +101,20 @@ func (c Config) ValidateWithOptions(opts ValidateOptions) error {
 	if strings.TrimSpace(c.App.Name) == "" {
 		return domain.NewValidationError("app.name", "не может быть пустым")
 	}
-	if opts.RequireDatabase && strings.TrimSpace(c.Database.URL) == "" {
-		return domain.NewValidationError("database.url", "не может быть пустым")
+	if opts.RequireDatabase {
+		driver := strings.TrimSpace(c.Database.Driver)
+		if driver == "" {
+			return domain.NewValidationError("database.driver", "не может быть пустым")
+		}
+		if driver != "postgres" && driver != "mongodb" {
+			return domain.NewValidationError("database.driver", "поддерживаются только postgres и mongodb")
+		}
+		if strings.TrimSpace(c.Database.URL) == "" {
+			return domain.NewValidationError("database.url", "не может быть пустым")
+		}
+		if driver == "mongodb" && strings.TrimSpace(c.Database.Name) == "" {
+			return domain.NewValidationError("database.name", "не может быть пустым для mongodb")
+		}
 	}
 	if strings.TrimSpace(c.Logging.Level) == "" {
 		return domain.NewValidationError("logging.level", "не может быть пустым")
@@ -139,6 +153,19 @@ func (c *Config) applyDefaults() {
 	if strings.TrimSpace(c.GUI.APIBaseURL) == "" {
 		c.GUI.APIBaseURL = "http://localhost:8080"
 	}
+	if strings.TrimSpace(c.Database.Driver) == "" {
+		c.Database.Driver = "mongodb"
+	}
+	if strings.TrimSpace(c.Database.URL) == "" {
+		if c.Database.Driver == "postgres" {
+			c.Database.URL = "postgres://vitaline_app:vitaline_app@localhost:5432/vitaline_clinic?sslmode=disable"
+		} else {
+			c.Database.URL = "mongodb://localhost:27017"
+		}
+	}
+	if strings.TrimSpace(c.Database.Name) == "" {
+		c.Database.Name = "vitaline_clinic"
+	}
 	if strings.TrimSpace(c.Logging.Level) == "" {
 		c.Logging.Level = "info"
 	}
@@ -152,7 +179,12 @@ func (c *Config) applyDefaults() {
 
 func (c *Config) applyEnvOverrides() error {
 	overrideString(&c.App.Name, os.Getenv("VITALINE_APP_NAME"))
+	overrideString(&c.Database.Driver, os.Getenv("VITALINE_DATABASE_DRIVER"))
 	overrideString(&c.Database.URL, os.Getenv("DATABASE_URL"))
+	overrideString(&c.Database.URL, os.Getenv("VITALINE_DATABASE_URL"))
+	overrideString(&c.Database.URL, os.Getenv("MONGODB_URI"))
+	overrideString(&c.Database.Name, os.Getenv("VITALINE_DATABASE_NAME"))
+	overrideString(&c.Database.Name, os.Getenv("MONGODB_DATABASE"))
 	overrideString(&c.API.Address, os.Getenv("VITALINE_HTTP_ADDRESS"))
 	overrideString(&c.GUI.Address, os.Getenv("VITALINE_GUI_ADDRESS"))
 	overrideString(&c.GUI.APIBaseURL, os.Getenv("VITALINE_GUI_API_BASE_URL"))
