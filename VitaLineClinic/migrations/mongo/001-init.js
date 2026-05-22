@@ -11,7 +11,10 @@ clinic.reschedule_offers.deleteMany({});
 clinic.patients.createIndex({ email: 1 }, { unique: true });
 clinic.appointments.createIndex(
   { doctor_id: 1, appointment_date: 1 },
-  { unique: true, partialFilterExpression: { status: { $ne: "CANCELLED" } } }
+  {
+    unique: true,
+    partialFilterExpression: { status: { $in: ["CREATED", "COMPLETED"] } },
+  }
 );
 clinic.appointments.createIndex({ patient_id: 1, appointment_date: 1 });
 clinic.schedule_slots.createIndex({ doctor_id: 1, slot_date: 1, start_time: 1 });
