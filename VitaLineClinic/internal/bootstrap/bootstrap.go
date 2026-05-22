@@ -24,6 +24,7 @@ type UseCases interface {
 	Appointments() usecase.IAppointmentService
 	Schedule() usecase.IScheduleService
 	Visits() usecase.IVisitService
+	Emergencies() usecase.IEmergencyService
 }
 
 type HealthChecker interface {
@@ -39,6 +40,7 @@ type useCases struct {
 	appointments usecase.IAppointmentService
 	schedule     usecase.IScheduleService
 	visits       usecase.IVisitService
+	emergencies  usecase.IEmergencyService
 }
 
 func (s *useCases) Patients() usecase.IPatientService {
@@ -55,6 +57,10 @@ func (s *useCases) Schedule() usecase.IScheduleService {
 
 func (s *useCases) Visits() usecase.IVisitService {
 	return s.visits
+}
+
+func (s *useCases) Emergencies() usecase.IEmergencyService {
+	return s.emergencies
 }
 
 type databaseHealthChecker struct {
@@ -124,6 +130,7 @@ func New(ctx context.Context, opts Options) (*App, error) {
 	appointmentRepo := postgres.NewAppointmentRepository(db)
 	scheduleRepo := postgres.NewScheduleRepository(db)
 	visitRepo := postgres.NewVisitRepository(db)
+	emergencyRepo := postgres.NewEmergencyRepository(db)
 
 	minLeadTime := time.Duration(cfg.Business.AppointmentMinLeadTimeMinutes) * time.Minute
 
@@ -134,6 +141,7 @@ func New(ctx context.Context, opts Options) (*App, error) {
 	)
 	scheduleSvc := usecase.NewScheduleService(scheduleRepo)
 	visitSvc := usecase.NewVisitService(visitRepo, appointmentRepo)
+	emergencySvc := usecase.NewEmergencyService(emergencyRepo, appointmentRepo)
 
 	app := &App{
 		ConfigPath:    configPath,
@@ -147,6 +155,7 @@ func New(ctx context.Context, opts Options) (*App, error) {
 			appointments: appointmentSvc,
 			schedule:     scheduleSvc,
 			visits:       visitSvc,
+			emergencies:  emergencySvc,
 		},
 		Health:  &databaseHealthChecker{db: db},
 		closers: []closer{db, logs},

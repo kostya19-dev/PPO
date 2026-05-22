@@ -83,6 +83,42 @@ func (p *Presenter) Visits(items []usecase.VisitResponseDTO) []VisitRow {
 	return rows
 }
 
+func (p *Presenter) EmergencyRequests(items []usecase.EmergencyRequestResponseDTO) []EmergencyRequestRow {
+	rows := make([]EmergencyRequestRow, 0, len(items))
+	for _, item := range items {
+		rows = append(rows, EmergencyRequestRow{
+			ID:            item.ID.String(),
+			PatientID:     item.PatientID.String(),
+			DoctorID:      item.DoctorID.String(),
+			RequestedDate: item.RequestedDate.Format(dateTimeLayout),
+			Reason:        item.Reason,
+			Status:        string(item.Status),
+			Badge:         emergencyBadge(item.Status),
+			CreatedAt:     item.CreatedAt.Format(dateTimeLayout),
+		})
+	}
+	return rows
+}
+
+func (p *Presenter) RescheduleOffers(items []usecase.RescheduleOfferResponseDTO) []RescheduleOfferRow {
+	rows := make([]RescheduleOfferRow, 0, len(items))
+	for _, item := range items {
+		rows = append(rows, RescheduleOfferRow{
+			ID:                 item.ID.String(),
+			EmergencyRequestID: item.EmergencyRequestID.String(),
+			AppointmentID:      item.AppointmentID.String(),
+			PatientID:          item.PatientID.String(),
+			DoctorID:           item.DoctorID.String(),
+			OldDate:            item.OldDate.Format(dateTimeLayout),
+			ProposedDate:       item.ProposedDate.Format(dateTimeLayout),
+			Status:             string(item.Status),
+			Badge:              offerBadge(item.Status),
+			CreatedAt:          item.CreatedAt.Format(dateTimeLayout),
+		})
+	}
+	return rows
+}
+
 func appointmentBadge(status domain.AppointmentStatus) string {
 	switch status {
 	case domain.StatusCancelled:
@@ -91,6 +127,28 @@ func appointmentBadge(status domain.AppointmentStatus) string {
 		return "muted"
 	default:
 		return "accent"
+	}
+}
+
+func emergencyBadge(status domain.EmergencyRequestStatus) string {
+	switch status {
+	case domain.EmergencyStatusNeedsReview, domain.EmergencyStatusCancelled:
+		return "danger"
+	case domain.EmergencyStatusScheduled:
+		return "accent"
+	default:
+		return "muted"
+	}
+}
+
+func offerBadge(status domain.RescheduleOfferStatus) string {
+	switch status {
+	case domain.OfferStatusDeclined:
+		return "danger"
+	case domain.OfferStatusAccepted:
+		return "accent"
+	default:
+		return "muted"
 	}
 }
 
@@ -114,4 +172,9 @@ func defaultDate() string {
 
 func defaultDateTime() string {
 	return time.Now().AddDate(0, 0, 1).Format(formTimeLayout)
+}
+
+func defaultEmergencyDateTime() string {
+	tomorrow := time.Now().AddDate(0, 0, 1)
+	return time.Date(tomorrow.Year(), tomorrow.Month(), tomorrow.Day(), 9, 0, 0, 0, time.Local).Format(formTimeLayout)
 }

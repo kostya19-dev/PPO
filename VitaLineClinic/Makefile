@@ -34,7 +34,7 @@ RECOMMENDATIONS ?= Bed rest
 
 ARGS ?= patient list
 GO_TEST_FLAGS ?=
-UNIT_TEST_PACKAGES ?= ./cmd/clinic ./internal/appconfig ./internal/delivery/http ./internal/storage/memory ./internal/usecase
+UNIT_TEST_PACKAGES ?= ./cmd/clinic ./internal/appconfig ./internal/bootstrap ./internal/delivery/cli ./internal/delivery/http ./internal/delivery/gui ./internal/domain ./internal/storage/memory ./internal/usecase ./internal/logging
 GUI_URL ?= http://localhost:8090
 
 .PHONY: help build demo \
@@ -49,7 +49,7 @@ GUI_URL ?= http://localhost:8090
 	logs logs-follow
 
 help:
-	@printf '\nVitaLine Clinic - lab 7 menu\n'
+	@printf '\nVitaLine Clinic - lab 8 menu\n'
 	@printf 'Usage: make <target> [VARIABLE=value]\n\n'
 	@printf 'Build and runtime:\n'
 	@printf '  make build                         build dist/clinic single binary\n'
@@ -152,7 +152,7 @@ db-seed-docker:
 	@$(COMPOSE) up --force-recreate migrations
 
 db-counts:
-	@PGPASSWORD="$(DB_PASSWORD)" psql -h "$(DB_HOST)" -p "$(DB_PORT)" -U "$(DB_USER)" -d "$(DB_NAME)" -c 'select (select count(*) from patients) patients, (select count(*) from appointments) appointments, (select count(*) from schedule_slots) slots, (select count(*) from visits) visits;'
+	@PGPASSWORD="$(DB_PASSWORD)" psql -h "$(DB_HOST)" -p "$(DB_PORT)" -U "$(DB_USER)" -d "$(DB_NAME)" -c 'select (select count(*) from patients) patients, (select count(*) from appointments) appointments, (select count(*) from schedule_slots) slots, (select count(*) from visits) visits, (select count(*) from emergency_requests) emergency_requests, (select count(*) from reschedule_offers) reschedule_offers;'
 
 cli:
 	@$(APP) --config $(CONFIG) $(ARGS)

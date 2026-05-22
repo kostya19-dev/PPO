@@ -515,3 +515,71 @@ http://localhost:8090/patients
 make gui-status
 make api-health
 ```
+
+## 20. Вертикальный срез: срочная запись пациента
+
+В рамках лабораторной работы №8 добавлен вертикальный срез **"Срочная запись пациента"**. Это новый сценарий, которого не было в исходных use-case: пациенту требуется срочный прием, а выбранное время может быть занято другой записью.
+
+Суть сценария:
+
+1. Администратор создает срочную заявку в GUI.
+2. Backend проверяет, занят ли слот у выбранного врача.
+3. Если слот свободен, создается обычная запись.
+4. Если слот занят, создается предложение переноса для пациента, который уже занимает это время.
+5. При принятии предложения старая запись переносится, а срочный пациент получает нужный слот.
+6. При отказе заявка переходит в статус `NEEDS_REVIEW`.
+
+Новые файлы и изменения:
+
+- `VitaLineClinic/internal/domain/emergency.go` — новые сущности `EmergencyRequest` и `RescheduleOffer`;
+- `VitaLineClinic/internal/usecase/emergency.go` — бизнес-логика срочной записи и переноса;
+- `VitaLineClinic/internal/storage/postgres/emergency.go` — PostgreSQL-репозиторий;
+- `VitaLineClinic/internal/delivery/http/emergency_handlers.go` — API endpoints;
+- `VitaLineClinic/internal/delivery/gui/*` — вкладка GUI **Срочные**;
+- `VitaLineClinic/migrations/schema.sql` — таблицы `emergency_requests` и `reschedule_offers`.
+
+API среза:
+
+```text
+GET  /api/emergencies
+POST /api/emergencies
+
+GET  /api/reschedule-offers
+POST /api/reschedule-offers/{id}/accept
+POST /api/reschedule-offers/{id}/decline
+```
+
+L4-диаграмма вертикального среза:
+
+```mermaid
+flowchart LR
+    GUI["GUI: Срочные"]
+    API["HTTP API<br/>emergency_handlers.go"]
+    UC["EmergencyService<br/>usecase/emergency.go"]
+    RepoInterface["EmergencyRepository interface"]
+    PgRepo["PostgreSQL EmergencyRepository"]
+    AppointmentRepo["AppointmentRepository"]
+    DB["PostgreSQL<br/>emergency_requests<br/>reschedule_offers<br/>appointments"]
+
+    GUI --> API
+    API --> UC
+    UC --> RepoInterface
+    UC --> AppointmentRepo
+    RepoInterface --> PgRepo
+    PgRepo --> DB
+    AppointmentRepo --> DB
+```
+
+Подробное описание для защиты лежит в `docs/lab8_vertical_slice.md`.
+
+Запуск GUI для проверки:
+
+```bash
+docker compose up -d --build
+```
+
+Открыть:
+
+```text
+http://localhost:8090/emergencies
+```

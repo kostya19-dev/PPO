@@ -7,13 +7,15 @@ type ViewModel struct {
 	Notice  string
 	Error   string
 
-	Patients      []PatientRow
-	Appointments  []AppointmentRow
-	Slots         []ScheduleSlotRow
-	FreeSlots     []ScheduleSlotRow
-	Visits        []VisitRow
-	Doctors       []DoctorRow
-	DoctorOptions []DoctorRow
+	Patients          []PatientRow
+	Appointments      []AppointmentRow
+	Slots             []ScheduleSlotRow
+	FreeSlots         []ScheduleSlotRow
+	Visits            []VisitRow
+	EmergencyRequests []EmergencyRequestRow
+	RescheduleOffers  []RescheduleOfferRow
+	Doctors           []DoctorRow
+	DoctorOptions     []DoctorRow
 
 	PatientID     string
 	PatientSearch string
@@ -23,6 +25,7 @@ type ViewModel struct {
 	AppointmentID string
 	Date          string
 	DateTime      string
+	Reason        string
 }
 
 type PatientRow struct {
@@ -68,6 +71,38 @@ type VisitRow struct {
 	Recommendations string
 	Status          string
 	Badge           string
+}
+
+type EmergencyRequestRow struct {
+	ID              string
+	PatientID       string
+	PatientName     string
+	PatientEmail    string
+	DoctorID        string
+	DoctorName      string
+	DoctorSpecialty string
+	RequestedDate   string
+	Reason          string
+	Status          string
+	Badge           string
+	CreatedAt       string
+}
+
+type RescheduleOfferRow struct {
+	ID                 string
+	EmergencyRequestID string
+	AppointmentID      string
+	PatientID          string
+	PatientName        string
+	PatientEmail       string
+	DoctorID           string
+	DoctorName         string
+	DoctorSpecialty    string
+	OldDate            string
+	ProposedDate       string
+	Status             string
+	Badge              string
+	CreatedAt          string
 }
 
 type DoctorRow struct {

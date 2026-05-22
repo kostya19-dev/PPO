@@ -26,6 +26,7 @@ type Services struct {
 	Appointments usecase.IAppointmentService
 	Schedule     usecase.IScheduleService
 	Visits       usecase.IVisitService
+	Emergencies  usecase.IEmergencyService
 }
 
 type Server struct {
@@ -62,6 +63,10 @@ func NewServer(address, appName string, services Services, logger *slog.Logger) 
 	mux.HandleFunc("/visits", srv.handleVisits)
 	mux.HandleFunc("/visits/start", srv.handleVisitStart)
 	mux.HandleFunc("/visits/complete", srv.handleVisitComplete)
+	mux.HandleFunc("/emergencies", srv.handleEmergencies)
+	mux.HandleFunc("/emergencies/create", srv.handleEmergencyCreate)
+	mux.HandleFunc("/emergencies/offers/accept", srv.handleRescheduleOfferAccept)
+	mux.HandleFunc("/emergencies/offers/decline", srv.handleRescheduleOfferDecline)
 
 	srv.httpServer = &http.Server{
 		Addr:    address,
@@ -353,6 +358,104 @@ func (s *Server) handleVisits(w http.ResponseWriter, r *http.Request) {
 	}
 	vm.Visits = s.presenter.Visits(visits)
 	s.render(w, "visits", vm)
+}
+
+func (s *Server) handleEmergencies(w http.ResponseWriter, r *http.Request) {
+	if !s.requireMethod(w, r, http.MethodGet) {
+		return
+	}
+
+	vm := s.baseView(r, "emergencies", "Срочные")
+	vm.DateTime = defaultEmergencyDateTime()
+
+	patients, err := s.services.Patients.GetAll(r.Context())
+	if err != nil {
+		s.renderError(w, r, "emergencies", "Срочные", err)
+		return
+	}
+	requests, err := s.services.Emergencies.GetRequests(r.Context())
+	if err != nil {
+		s.renderError(w, r, "emergencies", "Срочные", err)
+		return
+	}
+	offers, err := s.services.Emergencies.GetOffers(r.Context())
+	if err != nil {
+		s.renderError(w, r, "emergencies", "Срочные", err)
+		return
+	}
+
+	vm.Patients = s.presenter.Patients(patients)
+	vm.EmergencyRequests = decorateEmergencyRequests(s.presenter.EmergencyRequests(requests), vm.Patients)
+	vm.RescheduleOffers = decorateRescheduleOffers(s.presenter.RescheduleOffers(offers), vm.Patients)
+	s.render(w, "emergencies", vm)
+}
+
+func (s *Server) handleEmergencyCreate(w http.ResponseWriter, r *http.Request) {
+	if !s.requireMethod(w, r, http.MethodPost) {
+		return
+	}
+
+	patientID, err := parseUUID(r.FormValue("patient-id"), "patient-id")
+	if err != nil {
+		s.redirect(w, r, "/emergencies", "", err)
+		return
+	}
+	doctorID, err := parseUUID(r.FormValue("doctor-id"), "doctor-id")
+	if err != nil {
+		s.redirect(w, r, "/emergencies", "", err)
+		return
+	}
+	requestedDate, err := parseDateTime(r.FormValue("requested-date"))
+	if err != nil {
+		s.redirect(w, r, "/emergencies", "", err)
+		return
+	}
+	request, err := s.services.Emergencies.Create(r.Context(), usecase.CreateEmergencyRequestDTO{
+		PatientID:     patientID,
+		DoctorID:      doctorID,
+		RequestedDate: requestedDate,
+		Reason:        strings.TrimSpace(r.FormValue("reason")),
+	})
+	if err != nil {
+		s.redirect(w, r, "/emergencies", "", err)
+		return
+	}
+
+	s.redirect(w, r, "/emergencies", "Срочная заявка создана: "+request.ID.String()+" ("+string(request.Status)+")", nil)
+}
+
+func (s *Server) handleRescheduleOfferAccept(w http.ResponseWriter, r *http.Request) {
+	if !s.requireMethod(w, r, http.MethodPost) {
+		return
+	}
+	id, err := parseUUID(r.FormValue("id"), "id")
+	if err != nil {
+		s.redirect(w, r, "/emergencies", "", err)
+		return
+	}
+	offer, err := s.services.Emergencies.AcceptOffer(r.Context(), id)
+	if err != nil {
+		s.redirect(w, r, "/emergencies", "", err)
+		return
+	}
+	s.redirect(w, r, "/emergencies", "Перенос принят: "+offer.ID.String(), nil)
+}
+
+func (s *Server) handleRescheduleOfferDecline(w http.ResponseWriter, r *http.Request) {
+	if !s.requireMethod(w, r, http.MethodPost) {
+		return
+	}
+	id, err := parseUUID(r.FormValue("id"), "id")
+	if err != nil {
+		s.redirect(w, r, "/emergencies", "", err)
+		return
+	}
+	offer, err := s.services.Emergencies.DeclineOffer(r.Context(), id)
+	if err != nil {
+		s.redirect(w, r, "/emergencies", "", err)
+		return
+	}
+	s.redirect(w, r, "/emergencies", "Перенос отклонен: "+offer.ID.String(), nil)
 }
 
 func (s *Server) handleVisitStart(w http.ResponseWriter, r *http.Request) {

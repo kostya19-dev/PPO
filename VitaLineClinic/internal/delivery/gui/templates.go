@@ -3,7 +3,7 @@ package gui
 import "html/template"
 
 func parseTemplates() *template.Template {
-	return template.Must(template.New("gui").Parse(commonTemplate + patientsTemplate + appointmentsTemplate + scheduleTemplate + visitsTemplate))
+	return template.Must(template.New("gui").Parse(commonTemplate + patientsTemplate + appointmentsTemplate + scheduleTemplate + visitsTemplate + emergenciesTemplate))
 }
 
 const commonTemplate = `
@@ -265,6 +265,7 @@ const commonTemplate = `
       <a class="{{if eq .Active "appointments"}}active{{end}}" href="/appointments">Записи</a>
       <a class="{{if eq .Active "schedule"}}active{{end}}" href="/schedule">Расписание</a>
       <a class="{{if eq .Active "visits"}}active{{end}}" href="/visits">Приёмы</a>
+      <a class="{{if eq .Active "emergencies"}}active{{end}}" href="/emergencies">Срочные</a>
     </nav>
   </header>
 {{end}}
@@ -642,6 +643,145 @@ const visitsTemplate = `
         <label>Рекомендации <input name="recommendations" required></label>
         <button type="submit">Завершить</button>
       </form>
+    </section>
+  </aside>
+</div>
+{{template "footer" .}}
+{{end}}
+`
+
+const emergenciesTemplate = `
+{{define "emergencies"}}
+{{template "head" .}}
+{{template "nav" .}}
+<section class="page-hero">
+  <div>
+    <p class="eyebrow">Вертикальный срез</p>
+    <h1>Срочные записи</h1>
+    <p class="lead">Создание срочной заявки, предложение переноса занятого слота и фиксация решения пациента.</p>
+  </div>
+  <div class="metrics">
+    <div class="metric"><strong>{{len .EmergencyRequests}}</strong><span>заявок</span></div>
+    <div class="metric"><strong>{{len .RescheduleOffers}}</strong><span>переносов</span></div>
+  </div>
+</section>
+{{template "flash" .}}
+<div class="layout">
+  <section class="stack">
+    <div class="panel">
+      <h2>Срочные заявки</h2>
+      {{if .EmergencyRequests}}
+      <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Время</th><th>Статус</th><th>Пациент</th><th>Врач</th><th>Причина</th><th>ID</th></tr>
+        </thead>
+        <tbody>
+          {{range .EmergencyRequests}}
+          <tr>
+            <td><span class="primary-text">{{.RequestedDate}}</span><span class="subline">создана: {{.CreatedAt}}</span></td>
+            <td><span class="badge {{.Badge}}">{{.Status}}</span></td>
+            <td>
+              <span class="primary-text">{{if .PatientName}}{{.PatientName}}{{else}}Пациент{{end}}</span>
+              <span class="subline">{{.PatientEmail}}</span>
+              <span class="micro-id">{{.PatientID}}</span>
+            </td>
+            <td>
+              <span class="primary-text">{{if .DoctorName}}{{.DoctorName}}{{else}}Врач{{end}}</span>
+              <span class="subline">{{.DoctorSpecialty}}</span>
+              <span class="micro-id">{{.DoctorID}}</span>
+            </td>
+            <td>{{.Reason}}</td>
+            <td class="id compact">{{.ID}}</td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+      </div>
+      {{else}}
+      <div class="empty">Срочных заявок пока нет</div>
+      {{end}}
+    </div>
+
+    <div class="panel">
+      <h2>Предложения переноса</h2>
+      {{if .RescheduleOffers}}
+      <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Статус</th><th>Пациент</th><th>Врач</th><th>Было</th><th>Предложено</th><th></th></tr>
+        </thead>
+        <tbody>
+          {{range .RescheduleOffers}}
+          <tr>
+            <td><span class="badge {{.Badge}}">{{.Status}}</span><span class="micro-id">{{.ID}}</span></td>
+            <td>
+              <span class="primary-text">{{if .PatientName}}{{.PatientName}}{{else}}Пациент{{end}}</span>
+              <span class="subline">{{.PatientEmail}}</span>
+            </td>
+            <td>
+              <span class="primary-text">{{if .DoctorName}}{{.DoctorName}}{{else}}Врач{{end}}</span>
+              <span class="subline">{{.DoctorSpecialty}}</span>
+            </td>
+            <td>{{.OldDate}}</td>
+            <td>{{.ProposedDate}}</td>
+            <td>
+              {{if eq .Status "PENDING"}}
+              <form method="post" action="/emergencies/offers/accept">
+                <input type="hidden" name="id" value="{{.ID}}">
+                <button type="submit">Принять</button>
+              </form>
+              <form method="post" action="/emergencies/offers/decline">
+                <input type="hidden" name="id" value="{{.ID}}">
+                <button class="danger" type="submit">Отклонить</button>
+              </form>
+              {{else}}
+              <span class="badge {{.Badge}}">{{.Status}}</span>
+              {{end}}
+            </td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+      </div>
+      {{else}}
+      <div class="empty">Предложений переноса пока нет</div>
+      {{end}}
+    </div>
+  </section>
+
+  <aside class="stack">
+    <section class="panel">
+      <h2>Новая срочная запись</h2>
+      <form method="post" action="/emergencies/create">
+        <label>Пациент
+          <select name="patient-id" required>
+            {{range .Patients}}<option value="{{.ID}}">{{.FullName}} - {{.Email}}</option>{{end}}
+          </select>
+        </label>
+        <label>Врач
+          <select name="doctor-id" required>
+            {{range .DoctorOptions}}<option value="{{.ID}}" {{if eq $.DoctorID .ID}}selected{{end}}>{{.FullName}} - {{.Specialty}}, каб. {{.Cabinet}}</option>{{end}}
+          </select>
+        </label>
+        <label>Желаемое время <input name="requested-date" type="datetime-local" required value="{{.DateTime}}"></label>
+        <label>Причина <input name="reason" required placeholder="Острая боль, травма, экстренный осмотр"></label>
+        <button type="submit">Создать срочную заявку</button>
+      </form>
+    </section>
+    <section class="panel">
+      <h2>Контроль слота</h2>
+      <div class="doctor-list">
+        <div class="doctor-card">
+          <strong>Занятый слот для демо</strong>
+          <span>Павлова Елена Сергеевна · завтра 09:00</span>
+          <span>Существующая запись занимает время, срочная заявка формирует перенос.</span>
+        </div>
+        <div class="doctor-card">
+          <strong>Свободный слот</strong>
+          <span>При отсутствии конфликта срочный пациент получает запись сразу.</span>
+        </div>
+      </div>
     </section>
   </aside>
 </div>
