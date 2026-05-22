@@ -43,6 +43,10 @@ type visitBackend struct {
 	api *backendAPI
 }
 
+type emergencyBackend struct {
+	api *backendAPI
+}
+
 func NewBackendServices(baseURL string, logger *slog.Logger) Services {
 	if logger == nil {
 		logger = slog.Default()
@@ -57,6 +61,7 @@ func NewBackendServices(baseURL string, logger *slog.Logger) Services {
 		Appointments: &appointmentBackend{api: api},
 		Schedule:     &scheduleBackend{api: api},
 		Visits:       &visitBackend{api: api},
+		Emergencies:  &emergencyBackend{api: api},
 	}
 }
 
@@ -199,6 +204,41 @@ func (c *visitBackend) GetByPatient(ctx context.Context, patientID uuid.UUID) ([
 	query := url.Values{"patient_id": []string{patientID.String()}}
 	var result []usecase.VisitResponseDTO
 	err := c.api.do(ctx, nethttp.MethodGet, "/api/visits", query, nil, &result)
+	return result, err
+}
+
+func (c *emergencyBackend) Create(ctx context.Context, dto usecase.CreateEmergencyRequestDTO) (usecase.EmergencyRequestResponseDTO, error) {
+	var result usecase.EmergencyRequestResponseDTO
+	err := c.api.do(ctx, nethttp.MethodPost, "/api/emergencies", nil, map[string]any{
+		"patient_id":     dto.PatientID,
+		"doctor_id":      dto.DoctorID,
+		"requested_date": dto.RequestedDate,
+		"reason":         dto.Reason,
+	}, &result)
+	return result, err
+}
+
+func (c *emergencyBackend) GetRequests(ctx context.Context) ([]usecase.EmergencyRequestResponseDTO, error) {
+	var result []usecase.EmergencyRequestResponseDTO
+	err := c.api.do(ctx, nethttp.MethodGet, "/api/emergencies", nil, nil, &result)
+	return result, err
+}
+
+func (c *emergencyBackend) GetOffers(ctx context.Context) ([]usecase.RescheduleOfferResponseDTO, error) {
+	var result []usecase.RescheduleOfferResponseDTO
+	err := c.api.do(ctx, nethttp.MethodGet, "/api/reschedule-offers", nil, nil, &result)
+	return result, err
+}
+
+func (c *emergencyBackend) AcceptOffer(ctx context.Context, offerID uuid.UUID) (usecase.RescheduleOfferResponseDTO, error) {
+	var result usecase.RescheduleOfferResponseDTO
+	err := c.api.do(ctx, nethttp.MethodPost, "/api/reschedule-offers/"+offerID.String()+"/accept", nil, nil, &result)
+	return result, err
+}
+
+func (c *emergencyBackend) DeclineOffer(ctx context.Context, offerID uuid.UUID) (usecase.RescheduleOfferResponseDTO, error) {
+	var result usecase.RescheduleOfferResponseDTO
+	err := c.api.do(ctx, nethttp.MethodPost, "/api/reschedule-offers/"+offerID.String()+"/decline", nil, nil, &result)
 	return result, err
 }
 

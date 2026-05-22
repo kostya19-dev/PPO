@@ -105,6 +105,42 @@ func decorateSlots(rows []ScheduleSlotRow) []ScheduleSlotRow {
 	return rows
 }
 
+func decorateEmergencyRequests(rows []EmergencyRequestRow, patients []PatientRow) []EmergencyRequestRow {
+	patientByID := make(map[string]PatientRow, len(patients))
+	for _, patient := range patients {
+		patientByID[patient.ID] = patient
+	}
+	for i := range rows {
+		if patient, ok := patientByID[rows[i].PatientID]; ok {
+			rows[i].PatientName = patient.FullName
+			rows[i].PatientEmail = patient.Email
+		}
+		if doctor, ok := doctorByID(rows[i].DoctorID); ok {
+			rows[i].DoctorName = doctor.FullName
+			rows[i].DoctorSpecialty = doctor.Specialty
+		}
+	}
+	return rows
+}
+
+func decorateRescheduleOffers(rows []RescheduleOfferRow, patients []PatientRow) []RescheduleOfferRow {
+	patientByID := make(map[string]PatientRow, len(patients))
+	for _, patient := range patients {
+		patientByID[patient.ID] = patient
+	}
+	for i := range rows {
+		if patient, ok := patientByID[rows[i].PatientID]; ok {
+			rows[i].PatientName = patient.FullName
+			rows[i].PatientEmail = patient.Email
+		}
+		if doctor, ok := doctorByID(rows[i].DoctorID); ok {
+			rows[i].DoctorName = doctor.FullName
+			rows[i].DoctorSpecialty = doctor.Specialty
+		}
+	}
+	return rows
+}
+
 func filterPatientRows(rows []PatientRow, query string) []PatientRow {
 	query = strings.TrimSpace(query)
 	if query == "" {

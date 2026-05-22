@@ -19,6 +19,7 @@ type Services struct {
 	Appointments usecase.IAppointmentService
 	Schedule     usecase.IScheduleService
 	Visits       usecase.IVisitService
+	Emergencies  usecase.IEmergencyService
 }
 
 type Server struct {
@@ -49,6 +50,9 @@ func NewServer(address string, appName string, health HealthChecker, services Se
 	mux.HandleFunc("/api/schedule/free", srv.handleFreeSchedule)
 	mux.HandleFunc("/api/visits", srv.handleVisits)
 	mux.HandleFunc("/api/visits/", srv.handleVisitAction)
+	mux.HandleFunc("/api/emergencies", srv.handleEmergencies)
+	mux.HandleFunc("/api/reschedule-offers", srv.handleRescheduleOffers)
+	mux.HandleFunc("/api/reschedule-offers/", srv.handleRescheduleOfferAction)
 
 	srv.httpServer = &http.Server{
 		Addr:    address,

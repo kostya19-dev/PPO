@@ -1,3 +1,5 @@
+DELETE FROM reschedule_offers;
+DELETE FROM emergency_requests;
 DELETE FROM visits;
 DELETE FROM appointments;
 DELETE FROM schedule_slots;

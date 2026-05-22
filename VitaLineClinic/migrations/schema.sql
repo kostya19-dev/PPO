@@ -36,6 +36,28 @@ CREATE TABLE IF NOT EXISTS visits (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS emergency_requests (
+    id UUID PRIMARY KEY,
+    patient_id UUID NOT NULL,
+    doctor_id UUID NOT NULL,
+    requested_date TIMESTAMPTZ NOT NULL,
+    reason TEXT NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('WAITING_RESPONSE', 'SCHEDULED', 'NEEDS_REVIEW', 'CANCELLED')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS reschedule_offers (
+    id UUID PRIMARY KEY,
+    emergency_request_id UUID NOT NULL,
+    appointment_id UUID NOT NULL,
+    patient_id UUID NOT NULL,
+    doctor_id UUID NOT NULL,
+    old_date TIMESTAMPTZ NOT NULL,
+    proposed_date TIMESTAMPTZ NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('PENDING', 'ACCEPTED', 'DECLINED')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE UNIQUE INDEX IF NOT EXISTS appointments_doctor_slot_unique
     ON appointments (doctor_id, appointment_date)
     WHERE status <> 'CANCELLED';
@@ -48,3 +70,9 @@ CREATE INDEX IF NOT EXISTS schedule_slots_doctor_date_idx
 
 CREATE UNIQUE INDEX IF NOT EXISTS visits_appointment_unique
     ON visits (appointment_id);
+
+CREATE INDEX IF NOT EXISTS emergency_requests_status_idx
+    ON emergency_requests (status, requested_date);
+
+CREATE INDEX IF NOT EXISTS reschedule_offers_request_idx
+    ON reschedule_offers (emergency_request_id, status);

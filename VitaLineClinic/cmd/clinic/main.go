@@ -85,6 +85,7 @@ func runAPI(app *bootstrap.App) error {
 			Appointments: app.UseCases.Appointments(),
 			Schedule:     app.UseCases.Schedule(),
 			Visits:       app.UseCases.Visits(),
+			Emergencies:  app.UseCases.Emergencies(),
 		},
 		app.Logger,
 	)

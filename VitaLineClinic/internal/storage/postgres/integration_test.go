@@ -21,6 +21,7 @@ var (
 	_ usecase.VisitRepository       = (*VisitRepository)(nil)
 	_ usecase.PatientRepository     = (*PatientRepository)(nil)
 	_ usecase.ScheduleRepository    = (*ScheduleRepository)(nil)
+	_ usecase.EmergencyRepository   = (*EmergencyRepository)(nil)
 )
 
 func integrationDSN() string {
@@ -86,7 +87,7 @@ func resetTables(t *testing.T, db *sql.DB) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err := db.ExecContext(ctx, `TRUNCATE TABLE visits, schedule_slots, appointments, patients`)
+	_, err := db.ExecContext(ctx, `TRUNCATE TABLE reschedule_offers, emergency_requests, visits, schedule_slots, appointments, patients`)
 	if err != nil {
 		t.Fatalf("truncate tables: %v", err)
 	}
@@ -100,12 +101,15 @@ func TestIntegrationPostgres_SaveAndRetrieve(t *testing.T) {
 	appointmentRepo := NewAppointmentRepository(db)
 	visitRepo := NewVisitRepository(db)
 	scheduleRepo := NewScheduleRepository(db)
+	emergencyRepo := NewEmergencyRepository(db)
 
 	patientID := uuid.New()
 	doctorID := uuid.New()
 	appointmentID := uuid.New()
 	visitID := uuid.New()
 	slotID := uuid.New()
+	emergencyID := uuid.New()
+	offerID := uuid.New()
 
 	patient := &domain.Patient{
 		ID:        patientID,
@@ -154,6 +158,54 @@ func TestIntegrationPostgres_SaveAndRetrieve(t *testing.T) {
 	}
 	if foundAppointment.PatientID != patientID {
 		t.Fatalf("unexpected patient id in appointment: %s", foundAppointment.PatientID)
+	}
+
+	emergencyRequest := &domain.EmergencyRequest{
+		ID:            emergencyID,
+		PatientID:     patientID,
+		DoctorID:      doctorID,
+		RequestedDate: appointmentTime,
+		Reason:        "Urgent pain",
+		Status:        domain.EmergencyStatusWaitingResponse,
+		CreatedAt:     time.Date(2026, 4, 12, 8, 0, 0, 0, time.UTC),
+	}
+	if err := emergencyRepo.SaveRequest(ctx, emergencyRequest); err != nil {
+		t.Fatalf("save emergency request: %v", err)
+	}
+
+	rescheduleOffer := &domain.RescheduleOffer{
+		ID:                 offerID,
+		EmergencyRequestID: emergencyID,
+		AppointmentID:      appointmentID,
+		PatientID:          patientID,
+		DoctorID:           doctorID,
+		OldDate:            appointmentTime,
+		ProposedDate:       appointmentTime.Add(30 * time.Minute),
+		Status:             domain.OfferStatusPending,
+		CreatedAt:          time.Date(2026, 4, 12, 8, 5, 0, 0, time.UTC),
+	}
+	if err := emergencyRepo.SaveOffer(ctx, rescheduleOffer); err != nil {
+		t.Fatalf("save reschedule offer: %v", err)
+	}
+
+	emergencyRequests, err := emergencyRepo.FindAllRequests(ctx)
+	if err != nil {
+		t.Fatalf("find emergency requests: %v", err)
+	}
+	if len(emergencyRequests) != 1 || emergencyRequests[0].Status != domain.EmergencyStatusWaitingResponse {
+		t.Fatalf("unexpected emergency requests: %+v", emergencyRequests)
+	}
+
+	rescheduleOffer.Status = domain.OfferStatusAccepted
+	if err := emergencyRepo.UpdateOffer(ctx, rescheduleOffer); err != nil {
+		t.Fatalf("update reschedule offer: %v", err)
+	}
+	updatedOffer, err := emergencyRepo.FindOfferByID(ctx, offerID)
+	if err != nil {
+		t.Fatalf("find reschedule offer: %v", err)
+	}
+	if updatedOffer.Status != domain.OfferStatusAccepted {
+		t.Fatalf("unexpected offer status: %s", updatedOffer.Status)
 	}
 
 	patientAppointments, err := appointmentRepo.FindByPatient(ctx, patientID)
