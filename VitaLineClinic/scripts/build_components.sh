@@ -24,7 +24,7 @@ Contents:
 - logs/clinic.log   : log file
 
 Quick start:
-1. Start PostgreSQL
+1. Start MongoDB and application services
    docker compose -f ../docker-compose.yml up -d
 
 2. Run CLI

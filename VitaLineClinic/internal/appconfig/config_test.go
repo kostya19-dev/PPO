@@ -14,7 +14,7 @@ func TestLoad_ConfigFileAndEnvOverride(t *testing.T) {
 		"app": {"name": "Test App"},
 		"api": {"address": ":9090"},
 		"gui": {"address": ":9091", "api_base_url": "http://localhost:9090"},
-		"database": {"url": "postgres://from-file"},
+		"database": {"driver": "postgres", "url": "postgres://from-file", "name": "from_file"},
 		"logging": {"level": "warn", "file": "./logs/test.log"},
 		"business": {"appointment_min_lead_time_minutes": 45}
 	}`
@@ -23,7 +23,9 @@ func TestLoad_ConfigFileAndEnvOverride(t *testing.T) {
 		t.Fatalf("write config file: %v", err)
 	}
 
-	t.Setenv("DATABASE_URL", "postgres://from-env")
+	t.Setenv("VITALINE_DATABASE_DRIVER", "mongodb")
+	t.Setenv("MONGODB_URI", "mongodb://from-env:27017")
+	t.Setenv("MONGODB_DATABASE", "from_env")
 	t.Setenv("VITALINE_APP_NAME", "Env App")
 	t.Setenv("VITALINE_GUI_ADDRESS", ":9092")
 
@@ -35,8 +37,14 @@ func TestLoad_ConfigFileAndEnvOverride(t *testing.T) {
 	if resolved != path {
 		t.Fatalf("unexpected config path: %s", resolved)
 	}
-	if cfg.Database.URL != "postgres://from-env" {
+	if cfg.Database.URL != "mongodb://from-env:27017" {
 		t.Fatalf("expected env override, got %s", cfg.Database.URL)
+	}
+	if cfg.Database.Driver != "mongodb" {
+		t.Fatalf("expected driver env override, got %s", cfg.Database.Driver)
+	}
+	if cfg.Database.Name != "from_env" {
+		t.Fatalf("expected database name env override, got %s", cfg.Database.Name)
 	}
 	if cfg.App.Name != "Env App" {
 		t.Fatalf("expected app env override, got %s", cfg.App.Name)
@@ -54,7 +62,6 @@ func TestLoad_AppliesDefaults(t *testing.T) {
 	path := filepath.Join(dir, "app.json")
 
 	content := `{
-		"database": {"url": "postgres://localhost"},
 		"logging": {"file": "./logs/test.log"}
 	}`
 
@@ -78,6 +85,15 @@ func TestLoad_AppliesDefaults(t *testing.T) {
 	}
 	if cfg.GUI.APIBaseURL != "http://localhost:8080" {
 		t.Fatalf("unexpected default gui api base url: %s", cfg.GUI.APIBaseURL)
+	}
+	if cfg.Database.Driver != "mongodb" {
+		t.Fatalf("unexpected default database driver: %s", cfg.Database.Driver)
+	}
+	if cfg.Database.URL != "mongodb://localhost:27017" {
+		t.Fatalf("unexpected default database url: %s", cfg.Database.URL)
+	}
+	if cfg.Database.Name != "vitaline_clinic" {
+		t.Fatalf("unexpected default database name: %s", cfg.Database.Name)
 	}
 	if cfg.Logging.Level != "info" {
 		t.Fatalf("unexpected default log level: %s", cfg.Logging.Level)

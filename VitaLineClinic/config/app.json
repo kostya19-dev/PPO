@@ -11,7 +11,9 @@
     "api_base_url": "http://localhost:8080"
   },
   "database": {
-    "url": "postgres://vitaline_app:vitaline_app@localhost:5432/vitaline_clinic?sslmode=disable"
+    "driver": "mongodb",
+    "url": "mongodb://localhost:27017",
+    "name": "vitaline_clinic"
   },
   "logging": {
     "level": "info",
