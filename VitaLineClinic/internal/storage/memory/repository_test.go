@@ -11,7 +11,6 @@ import (
 	"vitaline-clinic/internal/usecase"
 )
 
-// Проверка реализации интерфейсов на этапе компиляции
 var (
 	_ usecase.AppointmentRepository = (*AppointmentRepository)(nil)
 	_ usecase.VisitRepository       = (*VisitRepository)(nil)
@@ -19,12 +18,9 @@ var (
 	_ usecase.ScheduleRepository    = (*ScheduleRepository)(nil)
 )
 
-// Тест 1: Сохранение и извлечение данных
-
 func TestMemory_SaveAndRetrieve(t *testing.T) {
 	ctx := context.Background()
 
-	// Patient
 	patientRepo := NewPatientRepository()
 	patientID := uuid.New()
 	patient := &domain.Patient{
@@ -50,7 +46,6 @@ func TestMemory_SaveAndRetrieve(t *testing.T) {
 		t.Errorf("ожидался email 'ivanov@example.com', получено: %s", found.Email)
 	}
 
-	// Поиск по email
 	byEmail, err := patientRepo.FindByEmail(ctx, "ivanov@example.com")
 	if err != nil {
 		t.Fatalf("ошибка поиска по email: %v", err)
@@ -59,7 +54,6 @@ func TestMemory_SaveAndRetrieve(t *testing.T) {
 		t.Errorf("ожидался ID=%s, получено ID=%s", patientID, byEmail.ID)
 	}
 
-	// Appointment
 	appRepo := NewAppointmentRepository()
 	futureDate := time.Now().Add(48 * time.Hour)
 	appID := uuid.New()
@@ -89,7 +83,6 @@ func TestMemory_SaveAndRetrieve(t *testing.T) {
 		t.Errorf("ожидался статус CREATED, получено: %s", foundApp.Status)
 	}
 
-	// Поиск по пациенту
 	byPatient, err := appRepo.FindByPatient(ctx, patientID)
 	if err != nil {
 		t.Fatalf("ошибка поиска по пациенту: %v", err)
@@ -98,7 +91,6 @@ func TestMemory_SaveAndRetrieve(t *testing.T) {
 		t.Errorf("ожидалась 1 запись, получено: %d", len(byPatient))
 	}
 
-	// Проверка занятости слота
 	isBusy, err := appRepo.CheckSlotBusy(ctx, doctorID, futureDate)
 	if err != nil {
 		t.Fatalf("ошибка проверки слота: %v", err)
@@ -107,7 +99,6 @@ func TestMemory_SaveAndRetrieve(t *testing.T) {
 		t.Error("ожидалось, что слот занят")
 	}
 
-	// Visit
 	visitRepo := NewVisitRepository()
 	visitID := uuid.New()
 	visit := &domain.Visit{
@@ -130,7 +121,6 @@ func TestMemory_SaveAndRetrieve(t *testing.T) {
 		t.Errorf("ожидались жалобы 'Головная боль', получено: %s", foundVisit.Complaints)
 	}
 
-	//  Schedule
 	schedRepo := NewScheduleRepository()
 	tomorrow := time.Now().Add(24 * time.Hour).Truncate(24 * time.Hour)
 	slotID := uuid.New()
@@ -158,12 +148,9 @@ func TestMemory_SaveAndRetrieve(t *testing.T) {
 	}
 }
 
-//Тест 2: Изменение данных
-
 func TestMemory_Update(t *testing.T) {
 	ctx := context.Background()
 
-	// Создаём и обновляем запись на приём
 	appRepo := NewAppointmentRepository()
 	appID := uuid.New()
 	app := &domain.Appointment{
@@ -178,7 +165,6 @@ func TestMemory_Update(t *testing.T) {
 		t.Fatalf("ошибка сохранения записи: %v", err)
 	}
 
-	// Отменяем запись
 	app.Status = domain.StatusCancelled
 	if err := appRepo.Update(ctx, app); err != nil {
 		t.Fatalf("ошибка обновления записи: %v", err)
@@ -192,7 +178,6 @@ func TestMemory_Update(t *testing.T) {
 		t.Errorf("ожидался статус CANCELLED, получено: %s", updated.Status)
 	}
 
-	// Создаём и завершаем визит
 	visitRepo := NewVisitRepository()
 	visitID := uuid.New()
 	visit := &domain.Visit{
@@ -224,7 +209,6 @@ func TestMemory_Update(t *testing.T) {
 		t.Errorf("ожидался диагноз 'ОРВИ', получено: %s", updatedVisit.Diagnosis)
 	}
 
-	// Обновляем телефон пациента
 	patientRepo := NewPatientRepository()
 	patientID := uuid.New()
 	patient := &domain.Patient{
@@ -252,12 +236,9 @@ func TestMemory_Update(t *testing.T) {
 	}
 }
 
-// Тест 3: Удаление данных
-
 func TestMemory_Delete(t *testing.T) {
 	ctx := context.Background()
 
-	// Удаление записи на приём
 	appRepo := NewAppointmentRepository()
 	appID := uuid.New()
 	app := &domain.Appointment{
@@ -281,13 +262,11 @@ func TestMemory_Delete(t *testing.T) {
 		t.Errorf("ожидалась ErrNotFound после удаления, получено: %v", err)
 	}
 
-	// Повторное удаление — ошибка
 	err = appRepo.Delete(ctx, appID)
 	if err != domain.ErrNotFound {
 		t.Errorf("ожидалась ErrNotFound при повторном удалении, получено: %v", err)
 	}
 
-	// Удаление пациента
 	patientRepo := NewPatientRepository()
 	patientID := uuid.New()
 	patient := &domain.Patient{
@@ -318,7 +297,6 @@ func TestMemory_Delete(t *testing.T) {
 		t.Errorf("ожидалось 0 пациентов после удаления, получено: %d", len(all))
 	}
 
-	// Удаление визита
 	visitRepo := NewVisitRepository()
 	visitID := uuid.New()
 	visit := &domain.Visit{
@@ -341,7 +319,6 @@ func TestMemory_Delete(t *testing.T) {
 		t.Errorf("ожидалась ErrNotFound после удаления визита, получено: %v", err)
 	}
 
-	// Удаление слота расписания
 	schedRepo := NewScheduleRepository()
 	tomorrow := time.Now().Add(24 * time.Hour).Truncate(24 * time.Hour)
 	slotID := uuid.New()
