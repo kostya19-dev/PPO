@@ -11,8 +11,6 @@ import (
 	"vitaline-clinic/internal/domain"
 )
 
-//  РУЧНОЙ МОК VISIT РЕПОЗИТОРИЯ
-
 type mockVisitRepo struct {
 	visits map[uuid.UUID]*domain.Visit
 }
@@ -56,8 +54,6 @@ func (m *mockVisitRepo) Delete(_ context.Context, id uuid.UUID) error {
 	delete(m.visits, id)
 	return nil
 }
-
-// ТЕСТЫ CREATE
 
 func TestVisitCreate_Success(t *testing.T) {
 	visitRepo := newMockVisitRepo()
@@ -219,8 +215,6 @@ func TestVisitCreate_AppointmentAlreadyCompleted(t *testing.T) {
 	}
 }
 
-//  ТЕСТЫ COMPLETE
-
 func TestVisitComplete_Success(t *testing.T) {
 	visitRepo := newMockVisitRepo()
 	appRepo := newMockAppRepo()
@@ -337,8 +331,6 @@ func TestVisitComplete_ValidationError_EmptyRecommendations(t *testing.T) {
 		t.Errorf("ожидалась ErrValidation, получено: %v", err)
 	}
 }
-
-// ТЕСТЫ GET
 
 func TestVisitGetByAppointment_Success(t *testing.T) {
 	visitRepo := newMockVisitRepo()
