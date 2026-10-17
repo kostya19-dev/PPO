@@ -11,8 +11,6 @@ import (
 	"vitaline-clinic/internal/domain"
 )
 
-// ручной мок репы
-
 type mockAppRepo struct {
 	appointments map[uuid.UUID]*domain.Appointment
 	isBusy       bool
@@ -83,8 +81,6 @@ func (m *mockAppRepo) Delete(_ context.Context, id uuid.UUID) error {
 	delete(m.appointments, id)
 	return nil
 }
-
-// ТЕСТЫ CREATE
 
 func TestCreate_Success(t *testing.T) {
 	repo := newMockAppRepo()
@@ -244,8 +240,6 @@ func TestCreate_RepoSaveError(t *testing.T) {
 	}
 }
 
-// ТЕСТЫ CANCEL
-
 func TestCancel_Success(t *testing.T) {
 	repo := newMockAppRepo()
 	service := NewAppointmentService(repo)
@@ -312,8 +306,6 @@ func TestCancel_CompletedAppointment(t *testing.T) {
 		t.Errorf("ожидалась ErrInvalidStatus, получено: %v", err)
 	}
 }
-
-// ТЕСТЫ GET
 
 func TestGetByID_Success(t *testing.T) {
 	repo := newMockAppRepo()
